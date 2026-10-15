@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% block title %}Cuadro de Mando{% endblock %}
+{% block content %}
+<div style="text-align:center"><h1>Cuadro de Mando</h1>
+<div style="color:var(--teal2)">Última actualización: {{ actualizado.strftime('%d/%m/%Y %H:%M') }}</div></div><br>
+<div class="stats">
+  <a class="stat" href="{{ url_for('clientes') }}"><b>{{ resumen.clientes }}</b><span>Clientes</span></a>
+  <a class="stat" href="{{ url_for('vehiculos') }}"><b>{{ resumen.vehiculos }}</b><span>Vehículos</span></a>
+  <a class="stat" href="/ordenes?estado=ABIERTA"><b>{{ resumen.abiertas }}</b><span>Órdenes abiertas</span></a>
+  <a class="stat" href="/presupuestos?estado=PENDIENTE"><b>{{ resumen.presupuestos }}</b><span>Presupuestos pendientes</span></a>
+</div>
+<div class="charts">
+  <div class="card"><h3 style="text-align:center;margin-top:0">Ingresos y Gastos últimos 12 meses</h3><canvas id="ig" height="230"></canvas></div>
+  <div class="card"><h3 style="text-align:center;margin-top:0">Revisiones técnicas por vencer (60 días)</h3>
+    {% if rev_proximas %}<table><tr><th>Patente</th><th>Vehículo</th><th>Cliente</th><th>Vence</th></tr>
+    {% for v in rev_proximas %}<tr class="row"><td class="plate">{{ v.patente }}</td><td>{{ v.marca }} {{ v.modelo }}</td>
+      <td><a href="{{ url_for('cliente_ficha', cid=v.cid) }}">{{ nombre_cliente(v) }}</a></td><td>{{ v.rev_tecnica|fecha }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">No hay revisiones técnicas por vencer.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('ig'), {type:'bar',
+  data:{labels:{{ meses|tojson }}, datasets:[
+    {label:'Ingresos', data:{{ ingresos|tojson }}, backgroundColor:'#7ee7a0'},
+    {label:'Gastos', data:{{ gastos|tojson }}, backgroundColor:'#f47c7c'}]},
+  options:{scales:{y:{ticks:{callback:v=>v.toLocaleString('es-CL')}}}}});
+</script>
+{% endblock %}

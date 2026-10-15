@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% block title %}{{ 'Editar' if editar else 'Nuevo' }} Cliente{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Clientes</div>{% endblock %}
+{% macro sel(name, opts) %}<select name="{{ name }}">{% for o in opts %}<option {{ 'selected' if c[name]==o }}>{{ o }}</option>{% endfor %}</select>{% endmacro %}
+{% block content %}
+<form method="post" class="box">
+  <div class="box-title"><a href="{{ url_for('clientes') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Cliente</span><button title="Guardar">💾</button></div>
+  <div class="box-body">
+    <div class="sect">Datos generales del cliente</div>
+    <div class="grid">
+      <label>N° Cliente</label><input name="numero" value="{{ numero }}" {{ 'readonly' if editar }}>
+      <label>RUT</label><input name="rut" value="{{ c.rut or '' }}" placeholder="12.345.678-9" autofocus>
+    </div>
+    <div class="grid"><label>Tipo de Cliente</label>{{ sel('tipo', ['Particular','Empresa']) }}<span></span><span></span></div>
+    <div class="grid"><label>Nombre / R.Social *</label><input class="full" name="nombre" value="{{ c.nombre or '' }}" required></div>
+    <div class="grid"><label>Primer Apellido</label><input name="apellido1" value="{{ c.apellido1 or '' }}">
+      <label>Segundo Apellido</label><input name="apellido2" value="{{ c.apellido2 or '' }}"></div>
+    <div class="grid"><label>Alias</label><input class="full" name="alias" value="{{ c.alias or '' }}"></div>
+    <div class="grid"><label>Teléfono</label><input name="telefono" value="{{ c.telefono or '' }}">
+      <label>Teléfono Móvil</label><input name="movil" value="{{ c.movil or '' }}"></div>
+    <div class="grid"><label>Dirección</label><input class="full" name="direccion" value="{{ c.direccion or '' }}" placeholder="Calle, número, depto"></div>
+    <div class="grid"><label>Cód. Postal</label><input name="cod_postal" value="{{ c.cod_postal or '' }}">
+      <label>Comuna</label><input name="comuna" value="{{ c.comuna or '' }}"></div>
+    <div class="grid"><label>Ciudad</label><input name="ciudad" value="{{ c.ciudad or '' }}">
+      <label>País</label>{{ sel('pais', ['Chile','Argentina','Perú','Otro']) }}</div>
+    <div class="grid"><label>e-Mail</label><input class="full" type="email" name="email" value="{{ c.email or '' }}" placeholder="correo@ejemplo.cl"></div>
+    <div class="grid"><label>Calidad del cliente</label>{{ sel('calidad', ['Sin definir','Bueno','Regular','Moroso']) }}<span></span><span></span></div>
+    <div class="grid"><label>Observaciones</label><textarea class="full" name="observaciones">{{ c.observaciones or '' }}</textarea></div>
+
+    <div class="sect">Otros datos del cliente</div>
+    <div class="grid"><label>Tipo de Tarifa</label>{{ sel('tarifa', ['Tarifa 1 - 35000 $ Hora','Tarifa 2 - 45000 $ Hora']) }}
+      <label>Grupo de Facturación</label>{{ sel('grupo_facturacion', ['1. Clientes Particulares','2. Empresas','3. Aseguradoras']) }}</div>
+    <div class="grid"><label>Desc. en Piezas %</label><input type="number" step="0.1" name="desc_piezas" value="{{ c.desc_piezas or '' }}">
+      <label>Desc. Mano Obra %</label><input type="number" step="0.1" name="desc_mo" value="{{ c.desc_mo or '' }}"></div>
+    <div class="grid"><label>Descuento gral %</label><input type="number" step="0.1" name="desc_gral" value="{{ c.desc_gral or '' }}">
+      <label>Cliente con IVA especial %</label><input type="number" step="0.1" name="iva_especial" value="{{ c.iva_especial or '' }}"></div>
+    <div class="grid"><label>Forma Pago</label>{{ sel('forma_pago', ['Efectivo','Tarjeta de débito','Tarjeta de crédito','Transferencia']) }}
+      <label>Condiciones Pago</label>{{ sel('condiciones_pago', ['-- Sin Definir --','Contado','30 días','60 días']) }}</div>
+    <div class="grid"><label>Cuenta Contable</label><input name="cuenta_contable" value="{{ c.cuenta_contable or '' }}">
+      <label>Cómo nos conoció</label>{{ sel('como_conocio', ['-- sin definir --','Recomendación','Redes sociales','Google','Pasaba por aquí']) }}</div>
+    <div class="actions"><a class="btn" href="{{ url_for('clientes') }}">Volver</a><button class="btn">{{ 'Guardar' if editar else 'Añadir' }}</button></div>
+  </div>
+</form>
+{% endblock %}

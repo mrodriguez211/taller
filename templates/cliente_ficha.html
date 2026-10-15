@@ -1,0 +1,59 @@
+{% extends "base.html" %}{% block title %}Ficha del Cliente{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Clientes</div>{% endblock %}
+{% block content %}
+{% set tabs = [('datos','Datos Generales'),('vehiculos','Vehículos del Cliente'),('otros','Otros Datos'),('riesgos','Riesgos'),('facturado','Facturado'),('actividad','Actividad Reciente')] %}
+<div class="box">
+  <div class="box-title"><a href="{{ url_for('clientes') }}">⬅</a><span class="ttl">Cliente {{ c.nombre }} ({{ c.numero }})</span>
+    <form method="post" action="{{ url_for('cliente_borrar', cid=c.id) }}" onsubmit="return confirm('¿Eliminar este cliente?')" style="display:inline"><button title="Eliminar">🗑</button></form>
+    <a href="javascript:print()" title="Imprimir">🖨</a></div>
+  <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
+  <div class="box-body">
+  {% if tab == 'datos' %}
+    <div class="sect">Datos generales del cliente</div>
+    <div class="grid"><label>N° Cliente</label><span>{{ c.numero }}</span><label>RUT</label><span>{{ c.rut }}</span></div>
+    <div class="grid"><label>Nombre</label><span class="full">{{ nombre_cliente(c) }} {% if c.alias %}({{ c.alias }}){% endif %}</span></div>
+    <div class="grid"><label>Teléfono</label><span>{{ c.telefono }}</span><label>Móvil</label><span>{{ c.movil }}</span></div>
+    <div class="grid"><label>Dirección</label><span class="full">{{ c.direccion }} {{ c.comuna }} {{ c.ciudad }} {{ c.pais }}</span></div>
+    <div class="grid"><label>e-Mail</label><span>{{ c.email }}</span><label>Calidad</label><span>{{ c.calidad }}</span></div>
+    <div class="grid"><label>Observaciones</label><span class="full">{{ c.observaciones }}</span></div>
+  {% elif tab == 'vehiculos' %}
+    <div class="sect">Vehículos asociados al cliente</div>
+    {% if vehiculos %}<table><tr><th>Marca - Modelo</th><th>Rev. Técnica</th><th>Patente</th><th>Chasis</th><th>Km</th><th></th></tr>
+    {% for v in vehiculos %}<tr class="row"><td><a href="{{ url_for('vehiculo_form', vid=v.id) }}">{{ v.marca }} {{ v.modelo }}</a></td>
+      <td>{{ v.rev_tecnica|fecha }}</td><td class="plate">{{ v.patente }}</td><td>{{ v.chasis }}</td><td>{{ v.km or '' }}</td>
+      <td class="num"><span class="dropdown"><button class="btn small gray" type="button">•••</button>
+        <span class="dd"><a href="{{ url_for('documento_nuevo', tipo='presupuesto', vid=v.id) }}">Crear Presupuesto</a>
+        <a href="{{ url_for('documento_nuevo', tipo='orden', vid=v.id) }}">Crear Orden de Reparación</a>
+        <a href="{{ url_for('vehiculo_form', vid=v.id) }}">Editar vehículo</a></span></span>
+        <form method="post" action="{{ url_for('vehiculo_borrar', vid=v.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar vehículo?')"><button class="btn small red">🗑</button></form></td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">Este cliente no tiene ningún vehículo asignado.</p>{% endif %}
+    <div class="actions"><a class="btn blue" href="{{ url_for('vehiculo_form', cid=c.id) }}">Añadir Vehículo</a></div>
+  {% elif tab == 'otros' %}
+    <div class="sect">Otros datos</div>
+    <div class="grid"><label>Tarifa</label><span>{{ c.tarifa }}</span><label>Grupo</label><span>{{ c.grupo_facturacion }}</span></div>
+    <div class="grid"><label>Desc. piezas</label><span>{{ c.desc_piezas }}%</span><label>Desc. mano obra</label><span>{{ c.desc_mo }}%</span></div>
+    <div class="grid"><label>Forma pago</label><span>{{ c.forma_pago }}</span><label>Condiciones</label><span>{{ c.condiciones_pago }}</span></div>
+    <div class="grid"><label>Cómo nos conoció</label><span>{{ c.como_conocio }}</span><label>Cuenta contable</label><span>{{ c.cuenta_contable }}</span></div>
+  {% elif tab == 'riesgos' %}
+    <p style="text-align:center;font-size:12px">Solo se muestran los 10 últimos documentos pendientes del cliente.</p>
+    <div class="sect">Órdenes pendientes de facturar</div>
+    {% if ordenes_sin_fact %}<table>{% for o in ordenes_sin_fact %}<tr class="row"><td><a href="{{ url_for('documento', tipo='orden', did=o.id) }}">{{ o.numero }}</a></td><td>{{ o.fecha|fechahora }}</td><td class="num">{{ total_lineas('orden', o.id)|clp }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">El cliente no tiene órdenes sin facturar</p>{% endif %}
+    <div class="sect">Boletas pendientes de cobrar</div>
+    {% if pendientes %}<table>{% for b in pendientes %}<tr class="row"><td><a href="{{ url_for('boleta', bid=b.id) }}">Boleta {{ b.numero }}</a></td><td>{{ b.fecha|fecha }}</td><td class="num">Pendiente {{ (total_lineas('boleta', b.id) - b.cobrado)|clp }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">El cliente no tiene boletas sin pagar</p>{% endif %}
+  {% elif tab == 'facturado' %}
+    <div class="sect">Boletas emitidas</div>
+    {% if boletas %}<table><tr><th>N°</th><th>Fecha</th><th>Total</th><th>Cobrado</th></tr>{% for b in boletas %}<tr class="row"><td><a href="{{ url_for('boleta', bid=b.id) }}">{{ b.numero }}</a></td><td>{{ b.fecha|fecha }}</td><td class="num">{{ total_lineas('boleta', b.id)|clp }}</td><td class="num">{{ b.cobrado|clp }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">Sin boletas emitidas</p>{% endif %}
+  {% elif tab == 'actividad' %}
+    <div class="sect">Actividad más reciente del cliente</div>
+    {% if actividad %}<table><tr><th>Documento</th><th>Fecha</th><th>Vehículo</th><th>Estado</th></tr>{% for d in actividad %}<tr class="row">
+      <td><a href="{{ url_for('documento', tipo=d.tipo, did=d.id) }}">{{ d.numero }}</a></td><td>{{ d.fecha|fechahora }}</td>
+      <td>{{ d.patente }} {{ d.marca }} {{ d.modelo }}</td><td>{{ d.estado }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="empty">El cliente no tiene registradas visitas al taller</p>{% endif %}
+  {% endif %}
+  <div class="actions"><a class="btn" href="{{ url_for('clientes') }}">Volver</a><a class="btn" href="{{ url_for('cliente_editar', cid=c.id) }}">Modificar</a><a class="btn" href="javascript:print()">Imprimir</a></div>
+  </div>
+</div>
+{% endblock %}

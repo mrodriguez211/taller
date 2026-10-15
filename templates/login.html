@@ -1,0 +1,14 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acceso · TallerPro</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body class="login-bg">
+<form class="login" method="post">
+  <div class="logo">⚙ Taller<span>PRO</span></div>
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}" style="color:#333">{{ msg }}</div>{% endfor %}
+  <label>Usuario</label><input type="text" name="usuario" required autofocus>
+  <label>Contraseña</label><input type="password" name="password" placeholder="password usuario" required>
+  <label>Código Taller</label><input type="text" name="codigo" placeholder="n° taller" required>
+  <div class="chk"><input type="checkbox" name="recordar" id="r"><label for="r" style="margin:0">Recordar datos</label></div>
+  <button class="btn">Iniciar Sesión</button>
+  <small>Demo: admin / admin123 / 1001</small>
+</form>
+</body></html>

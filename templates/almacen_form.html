@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Artículo Almacén{% endblock %}
+{% block content %}
+<div class="box">
+  <div class="box-title"><a href="{{ url_for('almacen') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Artículo</span></div>
+  <div class="box-body">
+    <form method="post" class="grid">
+      <label>Código</label><input name="codigo" value="{{ item.codigo or '' }}">
+      <label>Nombre</label><input name="nombre" value="{{ item.nombre or '' }}">
+      <label>Descripción</label><input name="descripcion" value="{{ item.descripcion or '' }}">
+      <label>Proveedor</label><input name="proveedor" value="{{ item.proveedor or '' }}">
+      <label>Stock</label><input type="number" name="stock" value="{{ item.stock or 0 }}" step="any">
+      <label>Precio</label><input type="number" name="precio" value="{{ item.precio or 0 }}" step="any">
+      <span></span><button class="btn">Guardar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

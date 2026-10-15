@@ -1,0 +1,73 @@
+{% extends "base.html" %}{% block title %}{{ 'Editar' if v.id else 'Nuevo' }} Vehículo{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Vehículos</div>{% endblock %}
+{% macro f(name, label, ph='', type='text') %}<label>{{ label }}</label><input type="{{ type }}" name="{{ name }}" id="{{ name }}" value="{{ v[name] if v[name] is not none else '' }}" placeholder="{{ ph }}">{% endmacro %}
+{% block content %}
+<form method="post" class="box">
+  <div class="box-title"><a href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">⬅</a><span class="ttl">{{ 'Editar' if v.id else 'Nuevo' }} Vehículo</span><button title="Guardar">💾</button></div>
+  <div class="box-body">
+    <p style="text-align:center"><b>Propietario</b> &nbsp; <a href="{{ url_for('cliente_ficha', cid=c.id) }}">{{ c.numero }} - {{ c.nombre|upper }}</a></p>
+    <div class="sect">Datos generales del vehículo</div>
+    <div class="grid">
+      <label>Patente *</label>
+      <div class="inline"><input name="patente" id="patente" value="{{ v.patente or '' }}" placeholder="ABCD12" required autofocus style="text-transform:uppercase">
+        <button type="button" class="icon-btn" id="buscar" title="Buscar datos por patente">⟳</button></div>
+      <label>Tipo de Vehículo</label>
+      <select name="tipo" id="tipo">{% for o in ['Turismo / Monovolumen','SUV / Todoterreno','Camioneta','Furgón','Motocicleta','Camión'] %}<option {{ 'selected' if v.tipo==o }}>{{ o }}</option>{% endfor %}</select>
+    </div>
+    <div class="grid">{{ f('chasis', 'N° Chasis', 'n° de chasis (VIN)') }}{{ f('color', 'Color') }}</div>
+    <div class="grid">{{ f('marca', 'Marca', 'escriba la marca ...') }}{{ f('modelo', 'Modelo', 'escriba el modelo ...') }}</div>
+    <div class="grid"><label>Combustible</label><select name="combustible" id="combustible">{% for o in ['---','Gasolina','Diésel','Híbrido','Eléctrico','GLP'] %}<option {{ 'selected' if (v.combustible or '').lower()==o.lower() }}>{{ o }}</option>{% endfor %}</select>
+      <label>Unidades Odómetro</label><select name="unidades_odometro"><option>Kilómetros</option><option {{ 'selected' if v.unidades_odometro=='Millas' }}>Millas</option></select></div>
+    <div class="grid"><label>Versión</label><input class="full" name="version" id="version" value="{{ v.version or '' }}"></div>
+    <div class="grid">{{ f('n_motor', 'N° Motor') }}{{ f('tipo_motor', 'Tipo Motor') }}</div>
+    <div class="grid">{{ f('potencia_cv', 'Potencia (CV)') }}{{ f('potencia_kw', 'Potencia (KW)') }}</div>
+    <div class="grid">{{ f('anio', 'Año Modelo', '', 'number') }}{{ f('km', 'Km Actuales', '', 'number') }}</div>
+    <div class="grid">{{ f('n_caja', 'N° Caja Cambios') }}{{ f('ref_bujias', 'Referencia Bujías') }}</div>
+    <div class="grid">{{ f('tipo_aceite', 'Tipo Aceite') }}{{ f('fecha_placa', 'Fecha Matriculación', '', 'date') }}</div>
+    <div class="grid">{{ f('rev_tecnica', 'Vence Rev. Técnica', '', 'date') }}<span></span><span></span></div>
+    <div class="actions"><a class="btn" href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">Volver</a><button class="btn">Guardar</button></div>
+  </div>
+</form>
+
+<div class="modal-bg" id="modal"><div class="modal">
+  <header>Mensaje del sistema <a href="#" onclick="cerrar();return false" style="color:#fff">✕</a></header>
+  <div class="content"><div class="ico">i</div><div id="msg"></div></div>
+  <footer><button class="btn blue" onclick="cerrar()">OK</button></footer>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+const $ = id => document.getElementById(id);
+function cerrar(){ $('modal').classList.remove('show'); }
+function mostrar(html){ $('msg').innerHTML = html; $('modal').classList.add('show'); }
+function fechaCL(iso){ if(!iso) return ''; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+function set(id, val){ if(val !== null && val !== undefined && val !== '' && $(id)) $(id).value = val; }
+
+async function buscarPatente(){
+  const p = $('patente').value.trim();
+  if(!p){ mostrar('Ingrese una patente.'); return; }
+  const btn = $('buscar'); btn.innerHTML = '<span class="spin">⟳</span>';
+  try{
+    const r = await fetch('/api/patente/' + encodeURIComponent(p));
+    const d = await r.json();
+    if(!d.ok){
+      mostrar(d.error + (d.rev_tecnica_estimada ? `<br><br>Según el calendario MTT, su revisión técnica vencería el <b>${fechaCL(d.rev_tecnica_estimada)}</b>.` : ''));
+      return;
+    }
+    set('patente', d.patente); set('marca', d.marca); set('modelo', d.modelo); set('anio', d.anio);
+    set('chasis', d.chasis); set('n_motor', d.motor); set('color', d.color); set('km', d.km);
+    set('rev_tecnica', d.rev_tecnica);
+    if(d.combustible){ [...$('combustible').options].forEach(o => { if(o.text.toLowerCase() === d.combustible.toLowerCase()) o.selected = true; }); }
+    if(d.tipo){ [...$('tipo').options].forEach(o => { if(o.text === d.tipo) o.selected = true; }); }
+    let html = `Se han detectado correctamente los datos del vehículo <b>${d.marca}</b> con patente <b>${d.patente}</b>.`;
+    if(d.rev_tecnica) html += `<br><br>La <b>Revisión Técnica</b> vence el <b>${fechaCL(d.rev_tecnica)}</b>.`;
+    if(d.km) html += `<br><br>La última lectura conocida de kilometraje de este vehículo fue de <b>${Number(d.km).toLocaleString('es-CL')}</b> km.`;
+    html += `<br><br><small>Fuente: ${d.fuente}</small>`;
+    mostrar(html);
+  }catch(e){ mostrar('No se pudo consultar la patente: ' + e); }
+  finally{ btn.innerHTML = '⟳'; }
+}
+$('buscar').addEventListener('click', buscarPatente);
+$('patente').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); buscarPatente(); } });
+</script>
+{% endblock %}

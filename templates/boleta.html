@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% block title %}Boleta {{ b.numero }}{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Facturas</div>{% endblock %}
+{% block content %}
+{% set pendiente = total - b.cobrado %}
+{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Boleta'),('cobros','Gestión de Cobros')] %}
+<div class="box">
+  <div class="box-title"><a href="{{ url_for('boletas') }}">⬅</a><span class="ttl">Boleta Nº {{ b.numero }}</span><a href="{{ url_for('boleta_imprimir', bid=b.id) }}" target="_blank" title="Imprimir">🖨</a></div>
+  <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
+  <div class="box-body">
+  {% if tab == 'datos' %}
+    <div class="sect">Datos generales de la boleta</div>
+    <div class="grid"><label>Grupo de Facturación</label><span class="full">{{ c.grupo_facturacion or '1. Clientes Particulares' }}</span></div>
+    <div class="grid"><label>Nº Boleta</label><span>{{ b.numero }}</span><label>Fecha Boleta</label><span>{{ b.fecha|fecha }}</span></div>
+    <div class="grid"><label>Fecha Vencimiento</label><span>{{ b.vencimiento|fecha }}</span><label>Estado del Cobro</label>
+      <span>{% if pendiente <= 0 %}<b style="color:var(--green)">Cobrada</b>{% elif b.cobrado > 0 %}Cobro parcial{% else %}Sin Cobrar{% endif %}</span></div>
+    <div class="grid"><label>Cliente</label><a href="{{ url_for('cliente_ficha', cid=c.id) }}">{{ nombre_cliente(c) }}</a><label>IVA</label><span>{{ taller.iva }} %</span></div>
+    <div class="grid"><label>Vehículo</label><span><span class="plate">{{ v.patente }}</span> {{ v.marca }} {{ v.modelo }}</span><label>Orden</label><a href="{{ url_for('documento', tipo='orden', did=o.id) }}">{{ o.numero }}</a></div>
+    <div class="grid"><label>Importe Boleta</label><b>{{ total|clp }}</b><label>Cobrado</label><span>{{ b.cobrado|clp }}</span></div>
+    <div class="grid"><label>Pendiente Cobro</label><b style="color:#d00">{{ pendiente|clp }}</b><label>Forma de pago</label><span>{{ b.forma_pago }}</span></div>
+    <p class="warn">ATENCIÓN: en esta boleta, los precios de las líneas ya van con el IVA incluido</p>
+  {% elif tab == 'lineas' %}
+    <div class="sect" id="lineas">Líneas de boleta</div>
+    {% set doc_tipo, doc_id = 'boleta', b.id %}{% include "_lineas.html" %}
+  {% elif tab == 'cobros' %}
+    <div class="sect">Gestión de cobros</div>
+    <div class="grid"><label>Total</label><span>{{ total|clp }}</span><label>Pendiente</label><b style="color:#d00">{{ pendiente|clp }}</b></div>
+    {% if pendiente > 0 %}
+    <form method="post" action="{{ url_for('boleta_cobrar', bid=b.id) }}" class="grid">
+      <label>Monto a cobrar</label><input type="number" name="monto" value="{{ pendiente|int }}" min="1" max="{{ pendiente|int }}">
+      <label>Forma de pago</label><select name="forma_pago">{% for o in ['Efectivo','Tarjeta de débito','Tarjeta de crédito','Transferencia'] %}<option {{ 'selected' if b.forma_pago==o }}>{{ o }}</option>{% endfor %}</select>
+      <span></span><button class="btn">Registrar Cobro</button>
+    </form>{% else %}<p class="empty">Boleta totalmente cobrada ✔</p>{% endif %}
+  {% endif %}
+  <div class="actions">
+    <a class="btn" href="{{ url_for('boletas') }}">Volver</a>
+    <a class="btn" href="{{ url_for('boleta_imprimir', bid=b.id) }}" target="_blank">Imprimir / PDF</a>
+    <a class="btn blue" href="?tab=cobros">Gestionar Cobros</a>
+    {% if c.email %}<a class="btn" href="mailto:{{ c.email }}?subject=Boleta {{ b.numero }}">Enviar Mail</a>{% endif %}
+  </div>
+  </div>
+</div>
+{% endblock %}

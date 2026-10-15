@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Clientes{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Clientes</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Gestionar Clientes</span><a href="{{ url_for('cliente_nuevo') }}" title="Nuevo">＋</a></div>
+<div class="box-body">
+  <form class="inline"><input name="q" value="{{ s }}" placeholder="Buscar por nombre, apellido, RUT o n° cliente"><button class="btn blue">Buscar</button></form>
+  <div class="sect">Clientes</div>
+  {% if clientes %}<table><tr><th>N°</th><th>Nombre</th><th>RUT</th><th>Teléfono</th><th>Vehículos</th></tr>
+  {% for c in clientes %}<tr class="row" onclick="location='{{ url_for('cliente_ficha', cid=c.id) }}'" style="cursor:pointer">
+    <td>{{ c.numero }}</td><td><a href="{{ url_for('cliente_ficha', cid=c.id) }}">{{ nombre_cliente(c) }}</a></td>
+    <td>{{ c.rut }}</td><td>{{ c.movil or c.telefono }}</td><td>{{ c.nveh }}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No se encontraron clientes.</p>{% endif %}
+</div></div>
+{% endblock %}

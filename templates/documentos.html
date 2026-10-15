@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set nombre = 'Presupuestos' if tipo=='presupuesto' else 'Órdenes de Reparación' %}
+{% block title %}{{ nombre }}{% endblock %}
+{% block vtab %}<div class="vtab">{{ nombre }}</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Gestionar {{ nombre }}</span><a href="{{ url_for('vehiculos') }}" title="Nuevo">＋</a></div>
+<div class="box-body">
+  <form class="inline"><select name="estado" onchange="this.form.submit()"><option value="">Todos los estados</option>
+    {% for e in estados %}<option {{ 'selected' if e==estado }}>{{ e }}</option>{% endfor %}</select></form>
+  <div class="sect">{{ nombre }}</div>
+  {% if docs %}<table><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Vehículo</th><th>Estado</th><th>Total</th></tr>
+  {% for d in docs %}<tr class="row"><td><a href="{{ url_for('documento', tipo=tipo, did=d.id) }}">{{ d.numero }}</a></td><td>{{ d.fecha|fechahora }}</td>
+    <td>{{ nombre_cliente(d) }}</td><td><span class="plate">{{ d.patente }}</span> {{ d.marca }} {{ d.modelo }}</td><td>{{ d.estado }}</td>
+    <td class="num">{{ total_lineas(tipo, d.id)|clp }}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No hay documentos. Crea uno desde la ficha del cliente o la búsqueda de vehículos.</p>{% endif %}
+</div></div>
+{% endblock %}

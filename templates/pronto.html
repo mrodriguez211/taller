@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}{{ seccion }}{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">{{ seccion }}</span><span></span></div>
+<div class="box-body"><p class="empty">🚧 Módulo «{{ seccion }}» en construcción. Es un buen ejercicio para practicar: copia el patrón de Clientes (tabla + formulario + rutas en app.py).</p></div></div>
+{% endblock %}

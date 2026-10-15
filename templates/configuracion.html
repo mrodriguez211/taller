@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Configuración{% endblock %}
+{% block content %}
+<form method="post" class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Datos del Taller</span><button>💾</button></div>
+<div class="box-body">
+  <div class="sect">Estos datos aparecen en las boletas impresas</div>
+  <div class="grid"><label>Nombre fantasía</label><input name="nombre" value="{{ taller.nombre }}"><label>Razón social</label><input name="razon_social" value="{{ taller.razon_social }}"></div>
+  <div class="grid"><label>RUT</label><input name="rut" value="{{ taller.rut }}"><label>IVA %</label><input type="number" step="0.1" name="iva" value="{{ taller.iva }}"></div>
+  <div class="grid"><label>Dirección</label><input class="full" name="direccion" value="{{ taller.direccion }}"></div>
+  <div class="grid"><label>Teléfono</label><input name="telefono" value="{{ taller.telefono }}"><label>e-Mail</label><input name="email" value="{{ taller.email }}"></div>
+  <div class="actions"><button class="btn">Guardar</button></div>
+</div></form>
+{% endblock %}

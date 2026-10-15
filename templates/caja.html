@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Caja{% endblock %}
+{% block vtab %}<div class="vtab">Caja</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Entradas / Salidas de Caja</span><span></span></div>
+<div class="box-body">
+  <form method="post" style="display:grid;grid-template-columns:150px 120px 1fr 140px auto;gap:6px">
+    <input type="date" name="fecha" value="{{ hoy }}"><select name="tipo"><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select>
+    <input name="concepto" placeholder="Concepto" required><input type="number" name="monto" placeholder="Monto" required><button class="btn">Registrar</button>
+  </form>
+  <div class="sect">Movimientos</div>
+  <table><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Monto</th></tr>
+  {% for m in movs %}<tr class="row"><td>{{ m.fecha|fecha }}</td><td>{{ m.tipo|capitalize }}</td><td>{{ m.concepto }}</td>
+    <td class="num" style="color:{{ 'var(--green)' if m.tipo=='ingreso' else '#d00' }}">{{ m.monto|clp }}</td></tr>{% endfor %}</table>
+</div></div>
+{% endblock %}

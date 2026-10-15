@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set nombre = 'Presupuesto' if tipo=='presupuesto' else 'Orden de Reparación' %}
+{% block title %}{{ nombre }} {{ d.numero }}{% endblock %}
+{% block vtab %}<div class="vtab">{{ 'Presupuestos' if tipo=='presupuesto' else 'Órdenes de Reparación' }}</div>{% endblock %}
+{% block content %}
+{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Detalle'),('comentarios','Comentarios Mecánicos')] %}
+<div class="box">
+  <div class="box-title"><a href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">⬅</a><span class="ttl">{{ nombre }} Nº {{ d.numero }}</span><a href="javascript:print()">🖨</a></div>
+  <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
+  <div class="box-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0">
+      <span class="pill {{ d.estado|lower }}">{{ tipo|upper if tipo=='presupuesto' else 'ORDEN' }} {{ d.estado }}</span>
+      <span class="plate">{{ v.patente }}</span><a href="{{ url_for('vehiculo_form', vid=v.id) }}">{{ v.marca }} {{ v.modelo }}</a>
+      <small>Año: {{ v.anio or '-' }}<br>Chasis: {{ v.chasis or '-' }}</small>
+    </div>
+    {% if tab == 'datos' %}
+    <form method="post">
+      <div class="sect">Datos generales</div>
+      <div class="grid"><label>Nº</label><span>{{ d.numero }}</span><label>Fecha / Hora Entrada</label><span>{{ d.fecha|fechahora }}</span></div>
+      <div class="grid"><label>Cliente</label><a href="{{ url_for('cliente_ficha', cid=c.id) }}">{{ nombre_cliente(c) }}</a><label>Teléfono(s)</label><span>{{ c.telefono }} {{ c.movil }}</span></div>
+      <div class="grid"><label>Kilómetros</label><input type="number" name="km" value="{{ d.km or '' }}">
+        <label>Tipo Intervención</label><select name="tipo_intervencion">{% for o in ['','Mantención','Reparación','Diagnóstico','Garantía'] %}<option {{ 'selected' if d.tipo_intervencion==o }}>{{ o }}</option>{% endfor %}</select></div>
+      <div class="grid">
+        {% if origen %}<label>Nº Presupuesto</label><a href="{{ url_for('documento', tipo='presupuesto', did=origen.id) }}">{{ origen.numero }}</a>{% else %}<span></span><span></span>{% endif %}
+        {% if derivado %}<label>Nº Orden</label><a href="{{ url_for('documento', tipo='orden', did=derivado.id) }}">{{ derivado.numero }}</a>
+        {% elif boleta %}<label>Nº Boleta</label><a href="{{ url_for('boleta', bid=boleta.id) }}">{{ boleta.numero }}</a>{% else %}<span></span><span></span>{% endif %}
+      </div>
+      <div class="grid"><label>Grupo de Facturación</label><span>{{ c.grupo_facturacion or '1. Clientes Particulares' }}</span><label>Rev. Técnica</label><span>{{ v.rev_tecnica|fecha }}</span></div>
+      {% if tipo=='orden' %}<div class="grid"><label>Fecha de Salida</label><input type="datetime-local" name="fecha_salida" value="{{ d.fecha_salida or '' }}"><span></span><span></span></div>{% endif %}
+      <p><b>Descripción de la revisión, la avería o los daños a reparar del vehículo</b></p>
+      <textarea name="descripcion">{{ d.descripcion or '' }}</textarea>
+      <input type="hidden" name="comentarios" value="{{ d.comentarios or '' }}">
+      <p class="warn">ATENCIÓN: los precios de las líneas insertadas ya van con el IVA incluido</p>
+      <div class="actions"><button class="btn blue">Guardar datos</button></div>
+    </form>
+    {% elif tab == 'comentarios' %}
+    <form method="post">
+      <input type="hidden" name="km" value="{{ d.km or '' }}"><input type="hidden" name="descripcion" value="{{ d.descripcion or '' }}">
+      <input type="hidden" name="tipo_intervencion" value="{{ d.tipo_intervencion or '' }}"><input type="hidden" name="fecha_salida" value="{{ d.fecha_salida or '' }}">
+      <div class="sect">Comentarios mecánicos</div>
+      <textarea name="comentarios" style="min-height:160px">{{ d.comentarios or '' }}</textarea>
+      <div class="actions"><button class="btn blue">Guardar</button></div>
+    </form>
+    {% endif %}
+
+    {% if tab in ('datos','lineas') %}
+    <div class="sect" id="lineas">Líneas de detalle</div>
+    {% include "_lineas.html" %}
+    {% endif %}
+
+    <div class="actions">
+      <a class="btn" href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">Volver</a>
+      {% if tipo=='presupuesto' %}
+        {% if derivado %}<a class="btn teal" href="{{ url_for('documento', tipo='orden', did=derivado.id) }}">Ver Orden {{ derivado.numero }}</a>
+        {% else %}<form method="post" action="{{ url_for('presupuesto_a_orden', did=d.id) }}"><button class="btn teal">Aceptar → Crear Orden</button></form>{% endif %}
+      {% else %}
+        {% if boleta %}<a class="btn teal" href="{{ url_for('boleta', bid=boleta.id) }}">Ver Boleta</a>
+        {% else %}<form method="post" action="{{ url_for('emitir_boleta', did=d.id) }}" onsubmit="return {{ 'true' if lineas else 'confirm(\'La orden no tiene líneas. ¿Emitir igual?\')' }}"><button class="btn teal">Emitir Boleta</button></form>{% endif %}
+        {% if d.estado=='ABIERTA' %}<form method="post" action="{{ url_for('orden_cerrar', did=d.id) }}"><button class="btn gray">Cerrar Orden</button></form>{% endif %}
+      {% endif %}
+      <a class="btn" href="javascript:print()">Imprimir</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

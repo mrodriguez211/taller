@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}TallerPro{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="logo" href="{{ url_for('dashboard') }}">⚙ Taller<span>PRO</span></a>
+    <div class="welcome">bienvenido <b>{{ usuario }}</b> (número de taller <b>{{ codigo }}</b>)</div>
+  </div>
+  <ul class="menu">
+    <li><a href="#">Gestión ▾</a>
+      <div class="mega">
+        <div>
+          <a class="search" href="{{ url_for('clientes') }}">Buscar Cliente ...</a>
+          <a class="search" href="{{ url_for('vehiculos') }}">Buscar Vehículo ...</a>
+          <h4>Gestión de Clientes</h4>
+          <a href="{{ url_for('cliente_nuevo') }}">👤 Nuevo Cliente</a>
+          <a href="{{ url_for('clientes') }}">📋 Gestionar Clientes</a>
+          <h4>Gestión de Proveedores</h4>
+          <a href="{{ url_for('pronto', seccion='proveedores') }}">Nuevo Proveedor</a>
+          <a href="{{ url_for('pronto', seccion='proveedores') }}">Gestionar Proveedores</a>
+        </div>
+        <div>
+          <h4>Gestión de Empleados</h4>
+          <a href="{{ url_for('pronto', seccion='empleados') }}">Nuevo Empleado</a>
+          <a href="{{ url_for('pronto', seccion='empleados') }}">Gestionar Empleados</a>
+          <h4>Gestión de Aseguradoras</h4>
+          <a href="{{ url_for('pronto', seccion='aseguradoras') }}">Nueva Aseguradora</a>
+          <a href="{{ url_for('pronto', seccion='aseguradoras') }}">Gestionar Aseguradoras</a>
+        </div>
+        <div>
+          <h4>Planificación</h4>
+          <a href="{{ url_for('pronto', seccion='citas') }}">Citas Previas</a>
+          <a href="{{ url_for('pronto', seccion='agenda') }}">Agenda</a>
+          <a href="{{ url_for('dashboard') }}">Estadísticas</a>
+        </div>
+        <div>
+          <h4>Marketing</h4>
+          <a href="{{ url_for('pronto', seccion='avisos-sms') }}">Avisos por SMS</a>
+          <a href="{{ url_for('pronto', seccion='avisos-email') }}">Avisos por e-Mail</a>
+          <h4>Caja</h4>
+          <a href="{{ url_for('caja') }}">💵 Entradas / Salidas de Caja</a>
+        </div>
+      </div>
+    </li>
+    <li><a href="#">Taller ▾</a>
+      <div class="mega">
+        <div>
+          <h4>Presupuestos</h4>
+          <a href="{{ url_for('vehiculos') }}">Nuevo Presupuesto</a>
+          <a href="/presupuestos">Gestionar Presupuestos</a>
+          <h4>Órdenes de Reparación</h4>
+          <a href="{{ url_for('vehiculos') }}">🔧 Nueva Orden de Reparación</a>
+          <a href="/ordenes">Gestionar Órdenes</a>
+          <a href="/ordenes?estado=ABIERTA">Visor de órdenes abiertas</a>
+        </div>
+        <div>
+          <h4>Facturas de Taller</h4>
+          <a href="/ordenes?estado=ABIERTA">Emitir Nueva Boleta</a>
+          <a href="{{ url_for('boletas') }}">Gestionar Boletas Emitidas</a>
+          <h4>Entregas de Vehículos</h4>
+          <a href="/ordenes?estado=CERRADA">Entregas realizadas</a>
+        </div>
+        <div>
+          <h4>Búsquedas Especiales</h4>
+          <a class="search" href="{{ url_for('vehiculos') }}">Buscar vehículo por patente ...</a>
+          <a href="{{ url_for('boletas') }}">Recibos de Cobro ...</a>
+        </div>
+      </div>
+    </li>
+    <li><a href="{{ url_for('almacen') }}">Almacén ▾</a></li>
+    <li><a href="#">Informes ▾</a>
+      <div class="mega" style="min-width:260px">
+        <div><h4>Informes</h4>
+          <a href="{{ url_for('dashboard') }}">Cuadro de Mando</a>
+          <a href="{{ url_for('boletas') }}">Ventas por boleta</a>
+          <a href="{{ url_for('caja') }}">Movimientos de caja</a></div>
+      </div>
+    </li>
+    <li><a href="{{ url_for('configuracion') }}">Configuración ▾</a></li>
+  </ul>
+</header>
+
+<nav class="side">
+  <a href="{{ url_for('logout') }}" title="Cerrar sesión">⏻</a>
+  <a href="javascript:history.back()" title="Volver">⇄</a>
+  <a href="{{ url_for('vehiculos') }}" title="Buscar patente">🚗</a>
+  <a href="{{ url_for('boletas') }}" class="alert" title="Boletas pendientes de cobro">🔔
+    {% if alertas %}<span class="badge">{{ alertas }}</span>{% endif %}</a>
+  <a href="/ordenes?estado=ABIERTA" title="Órdenes abiertas">📅</a>
+  <a href="{{ url_for('caja') }}" title="Caja">💵</a>
+</nav>
+
+{% block vtab %}{% endblock %}
+<main>
+  {% if taller %}<div class="contact"><span>{{ taller.nombre }}</span><span>Tfno: {{ taller.telefono }}</span><span>eMail: {{ taller.email }}</span></div>{% endif %}
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<div class="footer">TallerPro v1.0 · Python/Flask</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

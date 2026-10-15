@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Almacén{% endblock %}
+{% block content %}
+<div class="box">
+  <div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Almacén</span><a class="btn" href="{{ url_for('almacen_nuevo') }}">Nuevo</a></div>
+  <div class="box-body">
+    <form method="get" class="grid"><input name="q" value="{{ s }}" placeholder="Buscar código, nombre o proveedor"><button class="btn">Buscar</button></form>
+    <table class="list">
+      <tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th class="r">Stock</th><th class="r">Precio</th><th></th></tr>
+      {% for it in items %}
+      <tr>
+        <td>{{ it.codigo }}</td>
+        <td>{{ it.nombre }}</td>
+        <td>{{ it.proveedor }}</td>
+        <td class="r">{{ it.stock|int }}</td>
+        <td class="r">{{ it.precio|clp }}</td>
+        <td>
+          <a class="btn" href="{{ url_for('almacen_editar', aid=it.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('almacen_borrar', aid=it.id) }}" style="display:inline">
+            <button class="btn" onclick="return confirm('Borrar artículo?')">Borrar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
