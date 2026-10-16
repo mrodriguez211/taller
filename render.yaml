@@ -12,3 +12,17 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SOPORTE_EMAIL
+        sync: false
+      - key: SOPORTE_WHATSAPP
+        sync: false

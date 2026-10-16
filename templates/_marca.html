@@ -1,0 +1,6 @@
+{# Nombre, colores y logo configurables desde Configuración → General #}
+{% macro estilo() %}{% set c1 = marca.color1 if marca and marca.color1 else '#0d3b66' %}{% set c2 = marca.color2 if marca and marca.color2 else '#1fb5c4' %}
+<style>:root{--navy:{{ c1 }};--navy2:{{ c1|tono(0.15) }};--teal:{{ c2 }};--teal2:{{ c2|tono(-0.15) }}}</style>{% endmacro %}
+{% macro nombre_app() %}{{ (marca.nombre_app if marca else '') or 'TallerPRO' }}{% endmacro %}
+{% macro logo_html() %}{% if logo_v %}<img src="{{ url_for('logo', v=logo_v) }}" alt="" class="logo-img">{% else %}⚙{% endif %}
+{% if nombre_app() == 'TallerPRO' %}Taller<span>PRO</span>{% else %}{{ nombre_app() }}{% endif %}{% endmacro %}

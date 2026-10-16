@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block title %}Recepción de Repuestos{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('almacen') }}">⬅</a><span class="ttl">Recepción de Repuestos</span><span></span></div>
+<div class="box-body">
+  <div class="sect">Facturas de compra pendientes de recibir</div>
+  {% for c, lineas in pendientes %}
+  <form method="post" action="{{ url_for('recepcion_compra', cid=c.id) }}" class="recep {{ 'sel' if compra_sel==c.id }}" id="compra-{{ c.id }}">
+    <p><b>Factura {{ c.numero }}</b> · {{ c.proveedor or '(proveedor eliminado)' }} · {{ c.fecha|fecha }} <a href="{{ url_for('compra', cid=c.id) }}">ver factura</a></p>
+    <table><tr><th>Repuesto</th><th>Pedido</th><th>Ya recibido</th><th>Recibir ahora</th></tr>
+    {% for l in lineas if l.recibido < l.cantidad %}<tr class="row"><td>{{ l.codigo }} - {{ l.nombre }}</td><td class="num">{{ '%g'|format(l.cantidad) }}</td>
+      <td class="num">{{ '%g'|format(l.recibido) }}</td>
+      <td class="num"><input type="number" name="recibir_{{ l.id }}" value="{{ '%g'|format(l.cantidad - l.recibido) }}" min="0" max="{{ l.cantidad - l.recibido }}" step="any" style="width:90px"></td></tr>{% endfor %}</table>
+    <div class="actions"><button class="btn">Confirmar recepción</button></div>
+  </form>
+  {% else %}<p class="empty">No hay facturas pendientes de recibir.</p>{% endfor %}
+
+  <div class="sect">Recepción sin factura</div>
+  <form method="post" action="{{ url_for('recepcion_directa') }}" class="linea-form compra">
+    <select name="articulo_id" required><option value="">— Repuesto —</option>{% for a in articulos %}<option value="{{ a.id }}">{{ a.codigo }} - {{ a.nombre }} (stock {{ '%g'|format(a.stock) }})</option>{% endfor %}</select>
+    <input name="cantidad" type="number" step="any" min="0" placeholder="Cantidad" required>
+    <input name="referencia" placeholder="Referencia (guía, devolución...)">
+    <button class="btn blue">Ingresar</button>
+  </form>
+
+  <div class="sect" id="movimientos">Últimos movimientos de stock</div>
+  {% if movs %}<table><tr><th>Fecha</th><th>Repuesto</th><th>Cantidad</th><th>Referencia</th><th>Usuario</th></tr>
+  {% for m in movs %}<tr class="row"><td>{{ m.fecha|fechahora }}</td><td>{{ m.codigo }} - {{ m.nombre or '(eliminado)' }}</td>
+    <td class="num" style="color:var(--green)">+{{ '%g'|format(m.cantidad) }}</td><td>{{ m.referencia }}</td><td>{{ m.usuario or '' }}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">Todavía no hay movimientos.</p>{% endif %}
+</div></div>
+{% endblock %}

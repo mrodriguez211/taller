@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}Gestión de alertas{% endblock %}
+{% block vtab %}<div class="vtab">Configuración</div>{% endblock %}
+{% block content %}
+<form method="post" class="box"><div class="box-title"><a href="{{ url_for('configuracion') }}">⬅</a><span class="ttl">Gestión de alertas</span><button title="Guardar">💾</button></div>
+<div class="box-body">
+  <p style="font-size:12px">Elige qué avisos aparecen en la campana 🔔 de la barra lateral.</p>
+  <div class="sect">Alertas</div>
+  <table><tr><th>Activa</th><th>Alerta</th><th>Parámetro</th></tr>
+  {% for clave, nombre, param, defecto in defs %}{% set c = cfg.get(clave) %}
+  <tr class="row"><td style="text-align:center"><input type="checkbox" name="activa_{{ clave }}" value="1" {{ 'checked' if c and c.activa }} style="width:auto"></td>
+    <td><b>{{ nombre }}</b></td>
+    <td>{% if param %}<div class="inline"><small>{{ param }}</small><input type="number" min="0" name="dias_{{ clave }}" value="{{ c.dias if c and c.dias is not none else defecto }}" style="width:80px;flex:none"></div>
+        {% else %}<small>—</small><input type="hidden" name="dias_{{ clave }}" value="{{ defecto }}">{% endif %}</td></tr>{% endfor %}
+  </table>
+  <p style="font-size:12px">El stock mínimo de cada repuesto se define en Almacén → Gestionar Repuestos.</p>
+  <div class="actions"><a class="btn gray" href="{{ url_for('alertas_lista') }}">Ver alertas actuales</a><button class="btn">Guardar</button></div>
+</div></form>
+{% endblock %}

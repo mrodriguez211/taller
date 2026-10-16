@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Papelera{% endblock %}
+{% block vtab %}<div class="vtab">Configuración</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('configuracion') }}">⬅</a><span class="ttl">Papelera</span><span></span></div>
+<div class="box-body">
+  <p style="font-size:12px">Los clientes, vehículos, repuestos, proveedores, empleados y citas que se eliminan quedan aquí y se pueden restaurar.</p>
+  <div class="sect">Elementos eliminados</div>
+  {% if items %}<table><tr><th>Tipo</th><th>Descripción</th><th>Eliminado</th><th>Por</th><th></th></tr>
+  {% for p in items %}<tr class="row"><td>{{ nombres[p.tabla][0] if p.tabla in nombres else p.tabla }}</td><td>{{ p.descripcion }}</td>
+    <td>{{ p.fecha|fechahora }}</td><td>{{ p.usuario or '' }}</td>
+    <td class="num"><form method="post" action="{{ url_for('papelera_restaurar', pid=p.id) }}" style="display:inline"><button class="btn small teal">Restaurar</button></form>
+      <form method="post" action="{{ url_for('papelera_eliminar', pid=p.id) }}" style="display:inline" onsubmit="return confirm('Se eliminará definitivamente. ¿Continuar?')"><button class="btn small red">Eliminar</button></form></td></tr>{% endfor %}</table>
+  <div class="actions"><form method="post" action="{{ url_for('papelera_eliminar') }}" onsubmit="return confirm('Se eliminará definitivamente todo el contenido de la papelera. ¿Continuar?')"><button class="btn red">Vaciar papelera</button></form></div>
+  {% else %}<p class="empty">La papelera está vacía.</p>{% endif %}
+</div></div>
+{% endblock %}

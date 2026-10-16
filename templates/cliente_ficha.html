@@ -4,7 +4,7 @@
 {% set tabs = [('datos','Datos Generales'),('vehiculos','Vehículos del Cliente'),('otros','Otros Datos'),('riesgos','Riesgos'),('facturado','Facturado'),('actividad','Actividad Reciente')] %}
 <div class="box">
   <div class="box-title"><a href="{{ url_for('clientes') }}">⬅</a><span class="ttl">Cliente {{ c.nombre }} ({{ c.numero }})</span>
-    <form method="post" action="{{ url_for('cliente_borrar', cid=c.id) }}" onsubmit="return confirm('¿Eliminar este cliente?')" style="display:inline"><button title="Eliminar">🗑</button></form>
+    <form method="post" action="{{ url_for('cliente_borrar', cid=c.id) }}" onsubmit="return confirm('¿Enviar este cliente y sus vehículos a la papelera?')" style="display:inline"><button title="Eliminar">🗑</button></form>
     <a href="javascript:print()" title="Imprimir">🖨</a></div>
   <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
   <div class="box-body">
@@ -15,17 +15,17 @@
     <div class="grid"><label>Teléfono</label><span>{{ c.telefono }}</span><label>Móvil</label><span>{{ c.movil }}</span></div>
     <div class="grid"><label>Dirección</label><span class="full">{{ c.direccion }} {{ c.comuna }} {{ c.ciudad }} {{ c.pais }}</span></div>
     <div class="grid"><label>e-Mail</label><span>{{ c.email }}</span><label>Calidad</label><span>{{ c.calidad }}</span></div>
-    <div class="grid"><label>Observaciones</label><span class="full">{{ c.observaciones }}</span></div>
+    {% if c.observaciones %}<div class="obs"><b>📝 Observaciones</b><p>{{ c.observaciones }}</p></div>{% endif %}
   {% elif tab == 'vehiculos' %}
     <div class="sect">Vehículos asociados al cliente</div>
-    {% if vehiculos %}<table><tr><th>Marca - Modelo</th><th>Rev. Técnica</th><th>Patente</th><th>Chasis</th><th>Km</th><th></th></tr>
+    {% if vehiculos %}<table><tr><th>Marca - Modelo</th><th>Rev. Técnica</th><th>Patente</th><th>Chasis</th><th>Km</th><th>Observaciones</th><th></th></tr>
     {% for v in vehiculos %}<tr class="row"><td><a href="{{ url_for('vehiculo_form', vid=v.id) }}">{{ v.marca }} {{ v.modelo }}</a></td>
-      <td>{{ v.rev_tecnica|fecha }}</td><td class="plate">{{ v.patente }}</td><td>{{ v.chasis }}</td><td>{{ v.km or '' }}</td>
+      <td>{{ v.rev_tecnica|fecha }}</td><td class="plate">{{ v.patente }}</td><td>{{ v.chasis }}</td><td>{{ v.km or '' }}</td><td><small>{{ v.observaciones or '' }}</small></td>
       <td class="num"><span class="dropdown"><button class="btn small gray" type="button">•••</button>
         <span class="dd"><a href="{{ url_for('documento_nuevo', tipo='presupuesto', vid=v.id) }}">Crear Presupuesto</a>
         <a href="{{ url_for('documento_nuevo', tipo='orden', vid=v.id) }}">Crear Orden de Reparación</a>
         <a href="{{ url_for('vehiculo_form', vid=v.id) }}">Editar vehículo</a></span></span>
-        <form method="post" action="{{ url_for('vehiculo_borrar', vid=v.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar vehículo?')"><button class="btn small red">🗑</button></form></td></tr>{% endfor %}</table>
+        <form method="post" action="{{ url_for('vehiculo_borrar', vid=v.id) }}" style="display:inline" onsubmit="return confirm('¿Enviar vehículo a la papelera?')"><button class="btn small red">🗑</button></form></td></tr>{% endfor %}</table>
     {% else %}<p class="empty">Este cliente no tiene ningún vehículo asignado.</p>{% endif %}
     <div class="actions"><a class="btn blue" href="{{ url_for('vehiculo_form', cid=c.id) }}">Añadir Vehículo</a></div>
   {% elif tab == 'otros' %}

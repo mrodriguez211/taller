@@ -1,0 +1,26 @@
+<!doctype html>{% from "_marca.html" import estilo with context %}
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agenda tu hora · {{ marca.nombre }}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">{{ estilo() }}</head>
+<body class="login-bg">
+<div class="publico">
+  <div class="publico-head">{% if logo_v %}<img src="{{ url_for('logo', v=logo_v) }}" alt="">{% endif %}<h1>{{ marca.nombre }}</h1>
+    <p>{{ marca.direccion or '' }}{% if marca.telefono %} · {{ marca.telefono }}{% endif %}</p></div>
+  {% if listo %}
+    <p class="empty">✔ ¡Solicitud recibida! Te contactaremos para confirmar tu hora.</p>
+  {% else %}
+  <h2>Agenda tu hora</h2>
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  <form method="post">
+    <label>Nombre *</label><input name="nombre" value="{{ f.nombre or '' }}" required maxlength="120">
+    <label>Teléfono *</label><input name="telefono" type="tel" value="{{ f.telefono or '' }}" required maxlength="40" placeholder="+56 9 ...">
+    <label>e-Mail</label><input name="email" type="email" value="{{ f.email or '' }}" maxlength="120">
+    <label>Patente del vehículo</label><input name="patente" value="{{ f.patente or '' }}" maxlength="10" style="text-transform:uppercase">
+    <div class="dos"><div><label>Fecha *</label><input type="date" name="fecha" min="{{ hoy }}" value="{{ f.fecha or '' }}" required></div>
+      <div><label>Hora preferida</label><input type="time" name="hora" value="{{ f.hora or '' }}" min="08:00" max="19:00"></div></div>
+    <label>¿Qué necesita tu vehículo?</label><textarea name="motivo" maxlength="1000">{{ f.motivo or '' }}</textarea>
+    <input name="web" class="trampa" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="btn">Solicitar hora</button>
+  </form>
+  {% endif %}
+</div>
+</body></html>

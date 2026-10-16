@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}{{ 'Editar' if editar else 'Nuevo' }} Empleado{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Empleados</div>{% endblock %}
+{% macro f(name, label) %}<label>{{ label }}</label><input name="{{ name }}" value="{{ e[name] or '' }}">{% endmacro %}
+{% block content %}
+<form method="post" class="box"><div class="box-title"><a href="{{ url_for('empleados') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Empleado</span><button title="Guardar">💾</button></div>
+<div class="box-body">
+  <div class="sect">Datos del empleado</div>
+  <div class="grid">{{ f('nombre', 'Nombre completo *') }}{{ f('rut', 'RUT') }}</div>
+  <div class="grid">{{ f('cargo', 'Cargo') }}{{ f('telefono', 'Teléfono') }}</div>
+  <div class="grid">{{ f('email', 'e-Mail') }}<label class="chk-inline"><input type="checkbox" name="activo" value="1" {{ 'checked' if not editar or e.activo }}> Activo</label><span></span></div>
+  <div class="sect">Control de asistencia</div>
+  <div class="grid"><label>PIN para marcar {{ '(dejar vacío para no cambiarlo)' if editar else '*' }}</label>
+    <input name="pin" type="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6" autocomplete="new-password" placeholder="4 a 6 dígitos" {{ 'required' if not editar }}>
+    <span></span><small>El empleado usa este PIN para registrar su entrada y salida.</small></div>
+  <div class="actions"><a class="btn" href="{{ url_for('empleados') }}">Volver</a><button class="btn">Guardar</button></div>
+</div></form>
+{% endblock %}

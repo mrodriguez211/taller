@@ -1,28 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Almacén{% endblock %}
+{% block title %}Gestión de Repuestos{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
 {% block content %}
 <div class="box">
-  <div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Almacén</span><a class="btn" href="{{ url_for('almacen_nuevo') }}">Nuevo</a></div>
+  <div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Gestión de Repuestos</span><a href="{{ url_for('almacen_nuevo') }}" title="Nuevo">＋</a></div>
   <div class="box-body">
-    <form method="get" class="grid"><input name="q" value="{{ s }}" placeholder="Buscar código, nombre o proveedor"><button class="btn">Buscar</button></form>
-    <table class="list">
-      <tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th class="r">Stock</th><th class="r">Precio</th><th></th></tr>
-      {% for it in items %}
-      <tr>
+    <form method="get" class="inline"><input name="q" value="{{ s }}" placeholder="Buscar código, nombre o proveedor"><button class="btn blue">Buscar</button></form>
+    <div class="sect">Repuestos</div>
+    {% if items %}<table>
+      <tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th>Stock</th><th>Mínimo</th><th>Precio venta</th><th></th></tr>
+      {% for it in items %}{% set bajo = it.stock_minimo and it.stock <= it.stock_minimo %}
+      <tr class="row">
         <td>{{ it.codigo }}</td>
-        <td>{{ it.nombre }}</td>
+        <td><a href="{{ url_for('almacen_editar', aid=it.id) }}">{{ it.nombre }}</a></td>
         <td>{{ it.proveedor }}</td>
-        <td class="r">{{ it.stock|int }}</td>
-        <td class="r">{{ it.precio|clp }}</td>
-        <td>
-          <a class="btn" href="{{ url_for('almacen_editar', aid=it.id) }}">Editar</a>
-          <form method="post" action="{{ url_for('almacen_borrar', aid=it.id) }}" style="display:inline">
-            <button class="btn" onclick="return confirm('Borrar artículo?')">Borrar</button>
+        <td class="num" style="{{ 'color:#d00;font-weight:700' if bajo }}">{{ '%g'|format(it.stock) }}{% if bajo %} ⚠{% endif %}</td>
+        <td class="num">{{ '%g'|format(it.stock_minimo or 0) }}</td>
+        <td class="num">{{ it.precio|clp }}</td>
+        <td class="num">
+          <a class="btn small" href="{{ url_for('almacen_editar', aid=it.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('almacen_borrar', aid=it.id) }}" style="display:inline" onsubmit="return confirm('¿Enviar artículo a la papelera?')">
+            <button class="btn small red">🗑</button>
           </form>
         </td>
       </tr>
       {% endfor %}
     </table>
+    {% else %}<p class="empty">No se encontraron repuestos.</p>{% endif %}
+    <div class="actions"><a class="btn blue" href="{{ url_for('almacen_nuevo') }}">Nuevo Repuesto</a><a class="btn teal" href="{{ url_for('recepcion') }}">Recepción de Repuestos</a><a class="btn" href="{{ url_for('compras') }}">Facturas de Compra</a></div>
   </div>
 </div>
 {% endblock %}

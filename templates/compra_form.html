@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Nueva Factura de Compra{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
+{% block content %}
+<form method="post" class="box"><div class="box-title"><a href="{{ url_for('compras') }}">⬅</a><span class="ttl">Nueva Factura de Compra</span><button title="Guardar">💾</button></div>
+<div class="box-body">
+  {% if not proveedores %}<p class="warn">Primero registra al menos un proveedor en <a href="{{ url_for('proveedor_form') }}">Gestión → Nuevo Proveedor</a>.</p>{% endif %}
+  <div class="sect">Datos de la factura del proveedor</div>
+  <div class="grid"><label>Proveedor *</label><select name="proveedor_id" required><option value="">—</option>{% for p in proveedores %}<option value="{{ p.id }}" {{ 'selected' if f.proveedor_id==p.id|string }}>{{ p.nombre }}</option>{% endfor %}</select>
+    <label>N° Factura *</label><input name="numero" value="{{ f.numero or '' }}" required></div>
+  <div class="grid"><label>Fecha</label><input type="date" name="fecha" value="{{ f.fecha or hoy }}"><span></span><span></span></div>
+  <p><b>Observaciones</b></p><textarea name="observaciones">{{ f.observaciones or '' }}</textarea>
+  <div class="actions"><a class="btn" href="{{ url_for('compras') }}">Volver</a><button class="btn">Crear y agregar repuestos</button></div>
+</div></form>
+{% endblock %}

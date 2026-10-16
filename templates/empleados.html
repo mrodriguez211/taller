@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Empleados{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Empleados</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Gestionar Empleados</span><a href="{{ url_for('empleado_form') }}" title="Nuevo">＋</a></div>
+<div class="box-body">
+  <div class="sect">Empleados</div>
+  {% if empleados %}<table><tr><th>Nombre</th><th>RUT</th><th>Cargo</th><th>Teléfono</th><th>Estado</th><th></th></tr>
+  {% for e in empleados %}<tr class="row" style="{{ 'opacity:.55' if not e.activo }}"><td><a href="{{ url_for('empleado_form', eid=e.id) }}">{{ e.nombre }}</a></td><td>{{ e.rut }}</td>
+    <td>{{ e.cargo }}</td><td>{{ e.telefono }}</td><td>{{ 'Activo' if e.activo else 'Inactivo' }}{% if not e.pin_hash %} · <small>sin PIN</small>{% endif %}</td>
+    <td class="num"><form method="post" action="{{ url_for('empleado_borrar', eid=e.id) }}" onsubmit="return confirm('¿Enviar empleado a la papelera?')"><button class="btn small red">🗑</button></form></td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">Todavía no hay empleados registrados.</p>{% endif %}
+  <div class="actions"><a class="btn blue" href="{{ url_for('empleado_form') }}">Nuevo Empleado</a><a class="btn teal" href="{{ url_for('asistencia') }}">⏱ Entrada / Salida</a><a class="btn" href="{{ url_for('asistencia_registros') }}">Registro de asistencia</a></div>
+</div></div>
+{% endblock %}

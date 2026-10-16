@@ -1,8 +1,9 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Acceso · TallerPro</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<!doctype html>{% from "_marca.html" import estilo, logo_html, nombre_app with context %}
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acceso · {{ nombre_app() }}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">{{ estilo() }}</head>
 <body class="login-bg">
 <form class="login" method="post">
-  <div class="logo">⚙ Taller<span>PRO</span></div>
+  <div class="logo">{{ logo_html() }}</div>
   {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}" style="color:#333">{{ msg }}</div>{% endfor %}
   <label>Usuario</label><input type="text" name="usuario" required autofocus>
   <label>Contraseña</label><input type="password" name="password" placeholder="password usuario" required>

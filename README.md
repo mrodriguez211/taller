@@ -69,14 +69,36 @@ técnica según el calendario MTT por último dígito.
 taller/
 ├── app.py               # rutas Flask + base de datos SQLite
 ├── patente_provider.py  # búsqueda de datos por patente
+├── documentos_pdf.py    # PDF de boletas, presupuestos y órdenes
 ├── requirements.txt
 ├── static/style.css
 └── templates/           # páginas HTML (Jinja2)
 ```
 
-## Ideas para seguir practicando
-Los módulos Proveedores, Empleados, Almacén y Agenda están como "en construcción":
-copia el patrón de Clientes (tabla en `SCHEMA`, rutas en `app.py`, plantillas).
+## Módulos
+
+| Menú | Qué hace |
+|---|---|
+| Gestión → Proveedores / Empleados | Fichas de proveedores y trabajadores (cada empleado tiene un PIN). |
+| Gestión → Entrada / Salida | Reloj control: el trabajador elige su nombre y marca con su PIN. Solo los **administradores** pueden corregir, agregar o borrar marcas (con motivo). |
+| Gestión → Citas previas / Código QR | Agenda de citas. El QR lleva a `/agendar`, una página pública donde el cliente pide hora sin iniciar sesión. |
+| Taller → Ingreso de vehículo | Al abrir una orden se registra el estado del vehículo: km, combustible, zonas con daños, accesorios y fotos. |
+| Orden → Trabajos realizados | Se carga lo que se hizo (mecánico, horas) y opcionalmente se suma como mano de obra. |
+| Presupuesto / Orden / Boleta | Líneas divididas en **Piezas, Mano de obra y Otros**; todo se imprime en **PDF** y se envía al cliente por correo o WhatsApp. |
+| Almacén | Gestión de repuestos (con stock mínimo), facturas de compra y recepción de repuestos (suma stock y deja registro). |
+| Configuración → General | Datos del taller, datos económicos (IVA, tarifa hora, banco), logo, nombre de la aplicación y colores. |
+| Configuración → Usuarios, Alertas, Papelera | Roles (administrador/usuario), qué avisos muestra la campana 🔔 y restaurar lo eliminado. |
+| Configuración → Soporte y capacitación | Pedir una cita con la administración de la página. |
+
+La base de datos se actualiza sola al arrancar (agrega tablas y columnas nuevas sin perder datos).
+
+### Variables de entorno opcionales
+
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`: envío directo de PDF por correo.
+  Sin ellas, el botón «Abrir en mi correo» abre el programa de correo con el enlace al PDF.
+- `SOPORTE_EMAIL`, `SOPORTE_WHATSAPP`: a dónde llegan las solicitudes de soporte/capacitación.
+
+Ver `.env.example`.
 
 ## Deploy profesional (Render / Railway)
 

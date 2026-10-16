@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% block title %}Factura de Compra {{ c.numero }}{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('compras') }}">⬅</a><span class="ttl">Factura de Compra N° {{ c.numero }}</span><span></span></div>
+<div class="box-body">
+  <div class="sect">Datos generales</div>
+  <div class="grid"><label>Proveedor</label><span>{{ c.proveedor or '(eliminado)' }} {{ c.prut or '' }}</span><label>Fecha</label><span>{{ c.fecha|fecha }}</span></div>
+  <div class="grid"><label>Total factura</label><b>{{ total|clp }}</b><label>Pago</label><span>{{ '✔ Pagada (registrada en caja)' if c.pagada else 'Por pagar' }}</span></div>
+  {% if c.observaciones %}<div class="grid"><label>Observaciones</label><span class="full">{{ c.observaciones }}</span></div>{% endif %}
+
+  <div class="sect">Repuestos de la factura</div>
+  <table><tr><th>Código</th><th>Repuesto</th><th>Cant.</th><th>Precio unit.</th><th>Total</th><th>Recibido</th><th></th></tr>
+  {% for l in lineas %}<tr class="row"><td>{{ l.codigo }}</td><td>{{ l.nombre or '(repuesto eliminado)' }}</td><td class="num">{{ '%g'|format(l.cantidad) }}</td>
+    <td class="num">{{ l.precio|clp }}</td><td class="num">{{ (l.cantidad*l.precio)|clp }}</td>
+    <td class="num" style="color:{{ 'var(--green)' if l.recibido >= l.cantidad else '#d00' }}">{{ '%g'|format(l.recibido) }} / {{ '%g'|format(l.cantidad) }}</td>
+    <td class="num">{% if not l.recibido %}<form method="post" action="{{ url_for('compra_linea_borrar', lid=l.id) }}"><button class="btn small red">✕</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="7" class="empty">Agrega los repuestos que vienen en la factura.</td></tr>{% endfor %}
+  <tr><td colspan="4" class="num"><b>TOTAL (IVA incluido)</b></td><td class="num"><b>{{ total|clp }}</b></td><td colspan="2"></td></tr></table>
+
+  <form method="post" action="{{ url_for('compra_linea', cid=c.id) }}" class="linea-form compra">
+    <select name="articulo_id" required><option value="">— Repuesto —</option>{% for a in articulos %}<option value="{{ a.id }}">{{ a.codigo }} - {{ a.nombre }}</option>{% endfor %}</select>
+    <input name="cantidad" type="number" step="any" min="0" value="1" placeholder="Cant.">
+    <input name="precio" type="number" step="any" min="0" placeholder="Precio unit.">
+    <button class="btn blue">Añadir</button>
+  </form>
+  <p style="font-size:12px">¿El repuesto no existe todavía? <a href="{{ url_for('almacen_nuevo', volver=url_for('compra', cid=c.id)) }}">Crear repuesto nuevo</a> (con stock 0; el stock se suma al recibirlo).</p>
+
+  <div class="actions">
+    <a class="btn" href="{{ url_for('compras') }}">Volver</a>
+    <a class="btn teal" href="{{ url_for('recepcion', compra=c.id) }}#compra-{{ c.id }}">📦 Recibir en bodega</a>
+    {% if not c.pagada and lineas %}<form method="post" action="{{ url_for('compra_pagar', cid=c.id) }}" onsubmit="return confirm('Se registrará un gasto de {{ total|clp }} en caja. ¿Continuar?')"><button class="btn blue">Registrar pago en caja</button></form>{% endif %}
+    {% if not lineas|selectattr('recibido')|list %}<form method="post" action="{{ url_for('compra_borrar', cid=c.id) }}" onsubmit="return confirm('¿Eliminar esta factura de compra?')"><button class="btn red">Eliminar</button></form>{% endif %}
+  </div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Citas Previas{% endblock %}
+{% block vtab %}<div class="vtab">Planificación</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Citas Previas</span><a href="{{ url_for('marketing_qr') }}" title="Código QR">▦</a></div>
+<div class="box-body">
+  <form class="inline"><select name="estado" onchange="this.form.submit()"><option value="">Próximas citas</option>
+    {% for e in ['PENDIENTE','CONFIRMADA','ATENDIDA','CANCELADA'] %}<option {{ 'selected' if e==estado }}>{{ e }}</option>{% endfor %}</select></form>
+  <div class="sect">{{ estado|capitalize if estado else 'Próximas citas' }}</div>
+  {% if citas %}<table><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Teléfono</th><th>Patente</th><th>Motivo</th><th>Estado</th><th></th></tr>
+  {% for c in citas %}<tr class="row"><td>{{ c.fecha|fecha }}</td><td>{{ c.hora }}</td><td>{{ c.nombre }}{% if c.origen=='web' %} <small title="Agendada por el cliente desde el QR / web">🌐</small>{% endif %}</td>
+    <td>{{ c.telefono }}</td><td class="plate">{{ c.patente }}</td><td>{{ c.motivo }}</td><td><span class="tag {{ 'grave' if c.estado=='PENDIENTE' }}">{{ c.estado }}</span></td>
+    <td class="num"><form method="post" action="{{ url_for('cita_estado', cid=c.id) }}" class="inline">
+      <select name="estado">{% for e in ['PENDIENTE','CONFIRMADA','ATENDIDA','CANCELADA'] %}<option {{ 'selected' if e==c.estado }}>{{ e }}</option>{% endfor %}<option value="BORRAR">🗑 Eliminar</option></select>
+      <button class="btn small">OK</button></form></td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No hay citas.</p>{% endif %}
+
+  <div class="sect">Agendar cita</div>
+  <form method="post">
+    <div class="grid"><label>Nombre *</label><input name="nombre" required><label>Teléfono *</label><input name="telefono" required></div>
+    <div class="grid"><label>Fecha *</label><input type="date" name="fecha" min="{{ hoy }}" required><label>Hora</label><input type="time" name="hora"></div>
+    <div class="grid"><label>Patente</label><input name="patente" style="text-transform:uppercase"><label>e-Mail</label><input type="email" name="email"></div>
+    <div class="grid"><label>Motivo</label><input class="full" name="motivo"></div>
+    <div class="actions"><button class="btn">Agendar</button></div>
+  </form>
+  <p style="font-size:12px;text-align:center">Los clientes también pueden pedir hora solos desde <a href="{{ url_for('agendar') }}" target="_blank">la página pública de citas</a> (la del código QR).</p>
+</div></div>
+{% endblock %}

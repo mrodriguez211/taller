@@ -2,9 +2,9 @@
 {% block vtab %}<div class="vtab">Gestión de Facturas</div>{% endblock %}
 {% block content %}
 {% set pendiente = total - b.cobrado %}
-{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Boleta'),('cobros','Gestión de Cobros')] %}
+{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Boleta'),('cobros','Gestión de Cobros'),('enviar','Enviar al cliente')] %}
 <div class="box">
-  <div class="box-title"><a href="{{ url_for('boletas') }}">⬅</a><span class="ttl">Boleta Nº {{ b.numero }}</span><a href="{{ url_for('boleta_imprimir', bid=b.id) }}" target="_blank" title="Imprimir">🖨</a></div>
+  <div class="box-title"><a href="{{ url_for('boletas') }}">⬅</a><span class="ttl">Boleta Nº {{ b.numero }}</span><a href="{{ url_for('documento_pdf', tipo='boleta', did=b.id) }}" target="_blank" title="Ver / imprimir PDF">🖨</a></div>
   <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
   <div class="box-body">
   {% if tab == 'datos' %}
@@ -17,6 +17,9 @@
     <div class="grid"><label>Vehículo</label><span><span class="plate">{{ v.patente }}</span> {{ v.marca }} {{ v.modelo }}</span><label>Orden</label><a href="{{ url_for('documento', tipo='orden', did=o.id) }}">{{ o.numero }}</a></div>
     <div class="grid"><label>Importe Boleta</label><b>{{ total|clp }}</b><label>Cobrado</label><span>{{ b.cobrado|clp }}</span></div>
     <div class="grid"><label>Pendiente Cobro</label><b style="color:#d00">{{ pendiente|clp }}</b><label>Forma de pago</label><span>{{ b.forma_pago }}</span></div>
+    {% if c.observaciones or v.observaciones %}<div class="obs"><b>📝 Observaciones</b>
+      {% if c.observaciones %}<p><span>Cliente:</span> {{ c.observaciones }}</p>{% endif %}
+      {% if v.observaciones %}<p><span>Vehículo:</span> {{ v.observaciones }}</p>{% endif %}</div>{% endif %}
     <p class="warn">ATENCIÓN: en esta boleta, los precios de las líneas ya van con el IVA incluido</p>
   {% elif tab == 'lineas' %}
     <div class="sect" id="lineas">Líneas de boleta</div>
@@ -30,12 +33,14 @@
       <label>Forma de pago</label><select name="forma_pago">{% for o in ['Efectivo','Tarjeta de débito','Tarjeta de crédito','Transferencia'] %}<option {{ 'selected' if b.forma_pago==o }}>{{ o }}</option>{% endfor %}</select>
       <span></span><button class="btn">Registrar Cobro</button>
     </form>{% else %}<p class="empty">Boleta totalmente cobrada ✔</p>{% endif %}
+  {% elif tab == 'enviar' %}
+    {% set env_tipo, env_id = 'boleta', b.id %}{% include "_enviar.html" %}
   {% endif %}
   <div class="actions">
     <a class="btn" href="{{ url_for('boletas') }}">Volver</a>
-    <a class="btn" href="{{ url_for('boleta_imprimir', bid=b.id) }}" target="_blank">Imprimir / PDF</a>
+    <a class="btn" href="{{ url_for('documento_pdf', tipo='boleta', did=b.id) }}" target="_blank">Ver / Imprimir PDF</a>
     <a class="btn blue" href="?tab=cobros">Gestionar Cobros</a>
-    {% if c.email %}<a class="btn" href="mailto:{{ c.email }}?subject=Boleta {{ b.numero }}">Enviar Mail</a>{% endif %}
+    <a class="btn teal" href="?tab=enviar">Enviar por correo / WhatsApp</a>
   </div>
   </div>
 </div>

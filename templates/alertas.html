@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}Alertas{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Alertas ({{ lista|length }})</span>{% if admin %}<a href="{{ url_for('config_alertas') }}" title="Configurar alertas">⚙</a>{% else %}<span></span>{% endif %}</div>
+<div class="box-body">
+  {% if lista %}<table><tr><th>Tipo</th><th>Detalle</th></tr>
+  {% for a in lista %}<tr class="row"><td><span class="tag {{ 'grave' if a.grave }}">{{ a.tipo }}</span></td><td><a href="{{ a.url }}">{{ a.texto }}</a></td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">✔ No hay alertas pendientes.</p>{% endif %}
+</div></div>
+{% endblock %}

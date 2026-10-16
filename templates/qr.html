@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}Código QR{% endblock %}
+{% block vtab %}<div class="vtab">Marketing</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('citas') }}">⬅</a><span class="ttl">Código QR para agendar citas</span><a href="javascript:print()" title="Imprimir afiche">🖨</a></div>
+<div class="box-body">
+  <div class="afiche">
+    {% if logo_v %}<img src="{{ url_for('logo', v=logo_v) }}" alt="" class="afiche-logo">{% endif %}
+    <h2>{{ marca.nombre }}</h2>
+    <p class="afiche-txt">Escanea y agenda tu hora</p>
+    <div class="qr">{{ svg|safe }}</div>
+    <p>{{ marca.telefono or '' }}{% if marca.direccion %} · {{ marca.direccion }}{% endif %}</p>
+  </div>
+  <p class="no-print" style="text-align:center;font-size:12px">El QR abre: <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+  <div class="actions no-print">
+    <a class="btn" href="javascript:print()">Imprimir afiche</a>
+    <a class="btn blue" href="{{ url_for('marketing_qr_archivo', fmt='png') }}">Descargar PNG</a>
+    <a class="btn teal" href="{{ url_for('marketing_qr_archivo', fmt='svg') }}">Descargar SVG (para imprenta)</a>
+  </div>
+  <p class="no-print" style="font-size:12px;color:var(--muted)">Ponlo en el mesón, en redes sociales o en tarjetas de presentación. Las solicitudes llegan a Planificación → Citas Previas como «PENDIENTE» y aparecen en las alertas 🔔.</p>
+</div></div>
+{% endblock %}

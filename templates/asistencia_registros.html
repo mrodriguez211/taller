@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% block title %}Registro de asistencia{% endblock %}
+{% block vtab %}<div class="vtab">Control de Asistencia</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('asistencia') }}">⬅</a><span class="ttl">Registro de asistencia</span><span></span></div>
+<div class="box-body">
+  <form class="inline">
+    <select name="empleado"><option value="">Todos los empleados</option>{% for e in empleados %}<option value="{{ e.id }}" {{ 'selected' if eid==e.id|string }}>{{ e.nombre }}</option>{% endfor %}</select>
+    <input type="date" name="desde" value="{{ desde }}"><input type="date" name="hasta" value="{{ hasta }}"><button class="btn blue">Filtrar</button>
+  </form>
+  {% if resumen %}<div class="sect">Horas trabajadas en el período</div>
+  <table><tr><th>Empleado</th><th>Horas</th></tr>{% for n, h in resumen.items() %}<tr class="row"><td>{{ n }}</td><td class="num">{{ '%d h %02d min'|format(h|int, ((h - h|int) * 60)|round|int) }}</td></tr>{% endfor %}</table>{% endif %}
+
+  <div class="sect">Marcas</div>
+  {% if marcas %}<table><tr><th>Fecha / hora</th><th>Empleado</th><th>Tipo</th><th>Modificación</th>{% if admin %}<th>Corregir (solo administradores)</th>{% endif %}</tr>
+  {% for m in marcas %}<tr class="row"><td>{{ m.fecha|fechahora }}</td><td>{{ m.nombre or '(eliminado)' }}</td><td>{{ m.tipo|upper }}</td>
+    <td>{% if m.editado_por %}<small>{{ m.editado_por }}<br><i>{{ m.motivo }}</i></small>{% endif %}</td>
+    {% if admin %}<td><form method="post" action="{{ url_for('asistencia_modificar', mid=m.id) }}" class="marca-edit">
+      <input type="datetime-local" name="fecha" value="{{ m.fecha }}" required>
+      <select name="tipo"><option value="entrada">Entrada</option><option value="salida" {{ 'selected' if m.tipo=='salida' }}>Salida</option></select>
+      <input name="motivo" placeholder="Motivo" required>
+      <button class="btn small blue" name="accion" value="guardar">✔</button><button class="btn small red" name="accion" value="borrar" onclick="return confirm('¿Eliminar esta marca?')">✕</button>
+    </form></td>{% endif %}</tr>{% endfor %}</table>
+  {% else %}<p class="empty">No hay marcas en el período.</p>{% endif %}
+
+  {% if admin %}
+  <div class="sect">Agregar marca manual (emergencias / olvidos)</div>
+  <form method="post" action="{{ url_for('asistencia_modificar') }}">
+    <div class="grid"><label>Empleado</label><select name="empleado_id" required><option value="">—</option>{% for e in empleados %}<option value="{{ e.id }}">{{ e.nombre }}</option>{% endfor %}</select>
+      <label>Tipo</label><select name="tipo"><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div>
+    <div class="grid"><label>Fecha / hora</label><input type="datetime-local" name="fecha" required><label>Motivo *</label><input name="motivo" required></div>
+    <div class="actions"><button class="btn">Agregar marca</button></div>
+  </form>
+  {% else %}<p style="font-size:12px;color:var(--muted);text-align:center">🔒 Solo los administradores pueden modificar las marcas.</p>{% endif %}
+</div></div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Proveedores{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Proveedores</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Gestionar Proveedores</span><a href="{{ url_for('proveedor_form') }}" title="Nuevo">＋</a></div>
+<div class="box-body">
+  <form class="inline"><input name="q" value="{{ s }}" placeholder="Buscar por nombre, RUT, rubro o contacto"><button class="btn blue">Buscar</button></form>
+  <div class="sect">Proveedores</div>
+  {% if proveedores %}<table><tr><th>Nombre</th><th>RUT</th><th>Rubro</th><th>Contacto</th><th>Teléfono</th><th></th></tr>
+  {% for p in proveedores %}<tr class="row"><td><a href="{{ url_for('proveedor_form', pid=p.id) }}">{{ p.nombre }}</a></td><td>{{ p.rut }}</td>
+    <td>{{ p.rubro }}</td><td>{{ p.contacto }}</td><td>{{ p.telefono }}</td>
+    <td class="num"><form method="post" action="{{ url_for('proveedor_borrar', pid=p.id) }}" onsubmit="return confirm('¿Enviar proveedor a la papelera?')"><button class="btn small red">🗑</button></form></td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No se encontraron proveedores.</p>{% endif %}
+  <div class="actions"><a class="btn blue" href="{{ url_for('proveedor_form') }}">Nuevo Proveedor</a></div>
+</div></div>
+{% endblock %}

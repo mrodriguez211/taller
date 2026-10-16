@@ -25,6 +25,8 @@
     <div class="grid">{{ f('n_caja', 'N° Caja Cambios') }}{{ f('ref_bujias', 'Referencia Bujías') }}</div>
     <div class="grid">{{ f('tipo_aceite', 'Tipo Aceite') }}{{ f('fecha_placa', 'Fecha Matriculación', '', 'date') }}</div>
     <div class="grid">{{ f('rev_tecnica', 'Vence Rev. Técnica', '', 'date') }}<span></span><span></span></div>
+    <p><b>Observaciones del vehículo</b> <small>(se muestran en presupuestos, órdenes, boletas y PDF)</small></p>
+    <textarea name="observaciones">{{ v.observaciones or '' }}</textarea>
     <div class="actions"><a class="btn" href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">Volver</a><button class="btn">Guardar</button></div>
   </div>
 </form>

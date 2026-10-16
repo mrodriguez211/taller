@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block title %}Soporte y capacitación{% endblock %}
+{% block vtab %}<div class="vtab">Ayuda</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Soporte y capacitación</span><span></span></div>
+<div class="box-body">
+  <p style="font-size:13px">Pide una cita con la administración de la página para resolver un problema o para aprender a usar el sistema.
+    {% if whatsapp or correo %}También puedes escribir directamente:
+    {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank">WhatsApp</a>{% endif %}
+    {% if correo %}<a href="mailto:{{ correo }}">{{ correo }}</a>{% endif %}{% endif %}</p>
+  <div class="sect">Solicitar cita</div>
+  <form method="post">
+    <div class="grid"><label>Tipo</label><select name="tipo"><option>Soporte técnico</option><option>Capacitación</option></select>
+      <label>Contacto (teléfono)</label><input name="contacto" value="{{ marca.telefono or '' }}"></div>
+    <div class="grid"><label>Fecha preferida *</label><input type="date" name="fecha" min="{{ hoy }}" required><label>Hora</label><input type="time" name="hora"></div>
+    <div class="grid"><label>Asunto *</label><input class="full" name="asunto" required placeholder="Ej: cómo emitir una boleta / error al imprimir"></div>
+    <p><b>Detalle</b></p><textarea name="detalle"></textarea>
+    <div class="actions"><button class="btn">Enviar solicitud</button></div>
+  </form>
+  <div class="sect">Mis solicitudes</div>
+  {% if solicitudes %}<table><tr><th>Pedida</th><th>Tipo</th><th>Fecha cita</th><th>Asunto</th><th>Estado</th></tr>
+  {% for s in solicitudes %}<tr class="row"><td>{{ s.creado|fecha }}</td><td>{{ s.tipo }}</td><td>{{ s.fecha|fecha }} {{ s.hora }}</td><td title="{{ s.detalle }}">{{ s.asunto }}</td>
+    <td>{% if admin %}<form method="post" action="{{ url_for('soporte_estado', sid=s.id) }}" class="inline"><select name="estado" onchange="this.form.submit()">{% for e in ['SOLICITADA','CONFIRMADA','REALIZADA','CANCELADA'] %}<option {{ 'selected' if e==s.estado }}>{{ e }}</option>{% endfor %}</select></form>
+      {% else %}{{ s.estado }}{% endif %}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No has hecho solicitudes.</p>{% endif %}
+</div></div>
+{% endblock %}

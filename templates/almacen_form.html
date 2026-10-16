@@ -1,18 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Artículo Almacén{% endblock %}
+{% block title %}Repuesto{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
 {% block content %}
-<div class="box">
-  <div class="box-title"><a href="{{ url_for('almacen') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Artículo</span></div>
+<form method="post" class="box">
+  <div class="box-title"><a href="{{ url_for('almacen') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Repuesto</span><button title="Guardar">💾</button></div>
   <div class="box-body">
-    <form method="post" class="grid">
-      <label>Código</label><input name="codigo" value="{{ item.codigo or '' }}">
-      <label>Nombre</label><input name="nombre" value="{{ item.nombre or '' }}">
-      <label>Descripción</label><input name="descripcion" value="{{ item.descripcion or '' }}">
-      <label>Proveedor</label><input name="proveedor" value="{{ item.proveedor or '' }}">
-      <label>Stock</label><input type="number" name="stock" value="{{ item.stock or 0 }}" step="any">
-      <label>Precio</label><input type="number" name="precio" value="{{ item.precio or 0 }}" step="any">
-      <span></span><button class="btn">Guardar</button>
-    </form>
+    <div class="sect">Datos del repuesto</div>
+    <div class="grid"><label>Código *</label><input name="codigo" value="{{ item.codigo or '' }}" required><label>Nombre *</label><input name="nombre" value="{{ item.nombre or '' }}" required></div>
+    <div class="grid"><label>Descripción</label><input class="full" name="descripcion" value="{{ item.descripcion or '' }}"></div>
+    <div class="grid"><label>Proveedor habitual</label><input name="proveedor" value="{{ item.proveedor or '' }}" list="lista-proveedores" autocomplete="off">
+      <label>Precio de venta</label><input type="number" name="precio" value="{{ item.precio or 0 }}" step="any"></div>
+    <div class="grid"><label>Stock actual</label><input type="number" name="stock" value="{{ item.stock or 0 }}" step="any">
+      <label>Stock mínimo (alerta)</label><input type="number" name="stock_minimo" value="{{ item.stock_minimo or 0 }}" step="any" min="0"></div>
+    <p style="font-size:12px;color:var(--muted)">Para sumar stock al recibir mercadería usa <a href="{{ url_for('recepcion') }}">Recepción de Repuestos</a>: así queda registrado el movimiento.</p>
+    <datalist id="lista-proveedores">{% for p in proveedores %}<option value="{{ p.nombre }}">{% endfor %}</datalist>
+    <div class="actions"><a class="btn" href="{{ url_for('almacen') }}">Volver</a><button class="btn">Guardar</button></div>
   </div>
-</div>
+</form>
 {% endblock %}

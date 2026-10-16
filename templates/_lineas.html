@@ -1,20 +1,35 @@
 {% set doc_tipo = doc_tipo or tipo %}{% set doc_id = doc_id or d.id %}
-<table>
-  <tr><th>Tipo</th><th>Concepto</th><th>Cant.</th><th>Imp. Unit.</th><th>Desc %</th><th>Total</th><th></th></tr>
-  {% for l in lineas %}<tr class="row"><td>{{ l.tipo }}</td><td>{{ l.concepto }}</td><td class="num">{{ '%.2f'|format(l.cantidad) }}</td>
+{% set puede_editar = editable is not defined or editable %}
+<table class="lineas">
+  <tr><th>Concepto</th><th>Cant.</th><th>Imp. Unit.</th><th>Desc %</th><th>Total</th><th></th></tr>
+  {% for grupo, items, subtotal in agrupar_lineas(lineas) %}
+  <tr class="grupo"><td colspan="6">{{ grupo }}</td></tr>
+  {% for l in items %}<tr class="row"><td>{{ l.concepto }}</td><td class="num">{{ '%.2f'|format(l.cantidad) }}</td>
     <td class="num">{{ l.precio|clp }}</td><td class="num">{{ l.descuento or '' }}</td>
-    <td class="num">{{ (l.cantidad*l.precio*(1-(l.descuento or 0)/100))|clp }}</td>
-    <td class="num">{% if editable is not defined or editable %}<form method="post" action="{{ url_for('linea_borrar', lid=l.id) }}"><button class="btn small red">✕</button></form>{% endif %}</td></tr>
-  {% else %}<tr><td colspan="7" class="empty">Sin líneas. Agrega piezas, mano de obra u otros conceptos.</td></tr>{% endfor %}
-  <tr><td colspan="5" class="num"><b>TOTAL (IVA incluido)</b></td><td class="num"><b>{{ total|clp }}</b></td><td></td></tr>
+    <td class="num">{{ total_linea(l)|clp }}</td>
+    <td class="num">{% if puede_editar %}<form method="post" action="{{ url_for('linea_borrar', lid=l.id) }}"><button class="btn small red">✕</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="6" class="vacio">Sin {{ grupo|lower }}</td></tr>{% endfor %}
+  <tr class="subtotal"><td colspan="4" class="num">Subtotal {{ grupo|lower }}</td><td class="num">{{ subtotal|clp }}</td><td></td></tr>
+  {% endfor %}
+  <tr><td colspan="4" class="num"><b>TOTAL (IVA incluido)</b></td><td class="num"><b>{{ total|clp }}</b></td><td></td></tr>
 </table>
-{% if editable is not defined or editable %}
-<form method="post" action="{{ url_for('linea_nueva', tipo=doc_tipo, did=doc_id) }}" style="display:grid;grid-template-columns:130px 1fr 80px 120px 80px auto;gap:6px;margin-top:8px">
-  <select name="tipo"><option>Piezas</option><option>Mano de obra</option><option>Otros</option></select>
-  <input name="concepto" placeholder="Concepto (ej: filtro de aire)" required>
+{% if puede_editar %}
+<form method="post" action="{{ url_for('linea_nueva', tipo=doc_tipo, did=doc_id) }}" class="linea-form">
+  <select name="tipo" id="l-tipo">{% for t in TIPOS_LINEA %}<option>{{ t }}</option>{% endfor %}</select>
+  <input name="concepto" id="l-concepto" placeholder="Concepto (ej: filtro de aire)" required list="articulos-almacen" autocomplete="off">
   <input name="cantidad" type="number" step="0.01" value="1">
-  <input name="precio" type="number" step="1" placeholder="Precio">
+  <input name="precio" id="l-precio" type="number" step="1" placeholder="Precio">
   <input name="descuento" type="number" step="0.1" placeholder="Desc %">
   <button class="btn blue">Añadir</button>
 </form>
+{% if articulos %}
+<datalist id="articulos-almacen">{% for a in articulos %}<option value="{{ a.codigo }} - {{ a.nombre }}" data-precio="{{ a.precio|int }}">Stock: {{ a.stock|int }}</option>{% endfor %}</datalist>
+<script>
+// Al elegir un repuesto del almacén se completa el precio y el tipo «Piezas»
+document.getElementById('l-concepto').addEventListener('change', e => {
+  const o = [...document.querySelectorAll('#articulos-almacen option')].find(o => o.value === e.target.value);
+  if (o) { document.getElementById('l-precio').value = o.dataset.precio; document.getElementById('l-tipo').value = 'Piezas'; }
+});
+</script>
+{% endif %}
 {% endif %}

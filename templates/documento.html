@@ -3,9 +3,13 @@
 {% block title %}{{ nombre }} {{ d.numero }}{% endblock %}
 {% block vtab %}<div class="vtab">{{ 'Presupuestos' if tipo=='presupuesto' else 'Órdenes de Reparación' }}</div>{% endblock %}
 {% block content %}
-{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Detalle'),('comentarios','Comentarios Mecánicos')] %}
+{% if tipo == 'orden' %}
+{% set tabs = [('datos','Datos Generales'),('ingreso','Ingreso / Daños'),('lineas','Líneas de Detalle'),('trabajos','Trabajos Realizados'),('comentarios','Comentarios Mecánicos'),('enviar','Enviar')] %}
+{% else %}
+{% set tabs = [('datos','Datos Generales'),('lineas','Líneas de Detalle'),('comentarios','Comentarios Mecánicos'),('enviar','Enviar')] %}
+{% endif %}
 <div class="box">
-  <div class="box-title"><a href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">⬅</a><span class="ttl">{{ nombre }} Nº {{ d.numero }}</span><a href="javascript:print()">🖨</a></div>
+  <div class="box-title"><a href="{{ url_for('cliente_ficha', cid=c.id, tab='vehiculos') }}">⬅</a><span class="ttl">{{ nombre }} Nº {{ d.numero }}</span><a href="{{ url_for('documento_pdf', tipo=tipo, did=d.id) }}" target="_blank" title="Ver / imprimir PDF">🖨</a></div>
   <nav class="tabs">{% for k, t in tabs %}<a class="{{ 'on' if tab==k }}" href="?tab={{ k }}">{{ t }}</a>{% endfor %}</nav>
   <div class="box-body">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0">
@@ -13,6 +17,18 @@
       <span class="plate">{{ v.patente }}</span><a href="{{ url_for('vehiculo_form', vid=v.id) }}">{{ v.marca }} {{ v.modelo }}</a>
       <small>Año: {{ v.anio or '-' }}<br>Chasis: {{ v.chasis or '-' }}</small>
     </div>
+
+    {% if c.observaciones or v.observaciones or (ingreso and (ingreso.danos or ingreso.zonas or ingreso.observaciones)) %}
+    <div class="obs">
+      <b>📝 Observaciones</b>
+      {% if c.observaciones %}<p><span>Cliente:</span> {{ c.observaciones }}</p>{% endif %}
+      {% if v.observaciones %}<p><span>Vehículo:</span> {{ v.observaciones }}</p>{% endif %}
+      {% if ingreso and ingreso.zonas %}<p><span>Daños al ingreso:</span> {{ ingreso.zonas }}{% if ingreso.danos %} — {{ ingreso.danos }}{% endif %}</p>
+      {% elif ingreso and ingreso.danos %}<p><span>Daños al ingreso:</span> {{ ingreso.danos }}</p>{% endif %}
+      {% if ingreso and ingreso.observaciones %}<p><span>Ingreso:</span> {{ ingreso.observaciones }}</p>{% endif %}
+    </div>
+    {% endif %}
+
     {% if tab == 'datos' %}
     <form method="post">
       <div class="sect">Datos generales</div>
@@ -33,6 +49,47 @@
       <p class="warn">ATENCIÓN: los precios de las líneas insertadas ya van con el IVA incluido</p>
       <div class="actions"><button class="btn blue">Guardar datos</button></div>
     </form>
+
+    {% elif tab == 'ingreso' %}
+    {% set marcadas = (ingreso.zonas or '').split(', ') if ingreso else [] %}
+    {% set recibidos = (ingreso.accesorios or '').split(', ') if ingreso else [] %}
+    <form method="post" action="{{ url_for('orden_ingreso', did=d.id) }}" enctype="multipart/form-data">
+      <div class="sect">Ingreso del vehículo: estado en que llega</div>
+      <div class="grid"><label>Fecha / hora ingreso</label><input type="datetime-local" name="fecha" value="{{ ingreso.fecha if ingreso else d.fecha }}">
+        <label>Km al ingreso</label><input type="number" name="km" value="{{ (ingreso.km if ingreso else d.km) or '' }}"></div>
+      <div class="grid"><label>Nivel de combustible</label>
+        <select name="combustible">{% for o in ['', 'Reserva', '1/4', '1/2', '3/4', 'Lleno'] %}<option {{ 'selected' if ingreso and ingreso.combustible==o }}>{{ o }}</option>{% endfor %}</select><span></span><span></span></div>
+      <p><b>Zonas con daños (rayones, abolladuras, quiebres)</b></p>
+      <div class="checks">{% for z in zonas %}<label><input type="checkbox" name="zonas" value="{{ z }}" {{ 'checked' if z in marcadas }}> {{ z }}</label>{% endfor %}</div>
+      <p><b>Detalle de los daños</b></p>
+      <textarea name="danos" placeholder="Ej: rayón de 10 cm en puerta delantera derecha, foco trasero izquierdo trizado...">{{ ingreso.danos if ingreso else '' }}</textarea>
+      <p><b>Accesorios y elementos que trae el vehículo</b></p>
+      <div class="checks">{% for a in accesorios %}<label><input type="checkbox" name="accesorios" value="{{ a }}" {{ 'checked' if a in recibidos }}> {{ a }}</label>{% endfor %}</div>
+      <div class="grid"><label>Objetos de valor</label><input class="full" name="objetos" value="{{ ingreso.objetos if ingreso else '' }}" placeholder="Ej: lentes de sol en guantera"></div>
+      <p><b>Observaciones del ingreso</b></p>
+      <textarea name="observaciones">{{ ingreso.observaciones if ingreso else '' }}</textarea>
+      <div class="grid"><label>Fotos del vehículo</label><input class="full" type="file" name="fotos" accept="image/*" multiple capture="environment"></div>
+      <div class="actions"><button class="btn blue">Guardar ingreso</button></div>
+    </form>
+    {% if fotos %}<div class="fotos">{% for f in fotos %}<figure><a href="{{ url_for('foto_ingreso', fid=f.id) }}" target="_blank"><img src="{{ url_for('foto_ingreso', fid=f.id) }}" alt="{{ f.nombre }}"></a>
+      <form method="post" action="{{ url_for('foto_borrar', fid=f.id) }}" onsubmit="return confirm('¿Eliminar foto?')"><button class="btn small red">✕</button></form></figure>{% endfor %}</div>{% endif %}
+
+    {% elif tab == 'trabajos' %}
+    <div class="sect">Trabajos realizados en el vehículo</div>
+    {% if trabajos %}<table><tr><th>Fecha</th><th>Trabajo</th><th>Mecánico</th><th>Horas</th><th></th></tr>
+      {% for t in trabajos %}<tr class="row"><td>{{ t.fecha|fechahora }}</td><td>{{ t.descripcion }}</td><td>{{ t.empleado or '-' }}</td><td class="num">{{ '%g'|format(t.horas or 0) }}</td>
+        <td class="num"><form method="post" action="{{ url_for('trabajo_borrar', tid=t.id) }}" onsubmit="return confirm('¿Quitar este trabajo?')"><button class="btn small red">✕</button></form></td></tr>{% endfor %}
+      <tr><td colspan="3" class="num"><b>Total horas</b></td><td class="num"><b>{{ '%g'|format(trabajos|sum(attribute='horas')) }}</b></td><td></td></tr></table>
+    {% else %}<p class="empty">Todavía no se ha cargado ningún trabajo en esta orden.</p>{% endif %}
+    <form method="post" action="{{ url_for('trabajo_nuevo', did=d.id) }}">
+      <div class="grid"><label>Fecha / hora</label><input type="datetime-local" name="fecha">
+        <label>Mecánico</label><select name="empleado_id"><option value="">—</option>{% for e in empleados %}<option value="{{ e.id }}">{{ e.nombre }}</option>{% endfor %}</select></div>
+      <div class="grid"><label>Trabajo realizado</label><input class="full" name="descripcion" placeholder="Ej: cambio de pastillas de freno delanteras" required></div>
+      <div class="grid"><label>Horas</label><input type="number" name="horas" step="0.25" min="0" value="1">
+        <label class="chk-inline"><input type="checkbox" name="cargar" value="1" checked> Cargar como mano de obra</label><small>Tarifa: {{ marca.tarifa_hora|clp }} / hora</small></div>
+      <div class="actions"><button class="btn blue">Registrar trabajo</button></div>
+    </form>
+
     {% elif tab == 'comentarios' %}
     <form method="post">
       <input type="hidden" name="km" value="{{ d.km or '' }}"><input type="hidden" name="descripcion" value="{{ d.descripcion or '' }}">
@@ -41,6 +98,9 @@
       <textarea name="comentarios" style="min-height:160px">{{ d.comentarios or '' }}</textarea>
       <div class="actions"><button class="btn blue">Guardar</button></div>
     </form>
+
+    {% elif tab == 'enviar' %}
+    {% set env_tipo, env_id = tipo, d.id %}{% include "_enviar.html" %}
     {% endif %}
 
     {% if tab in ('datos','lineas') %}
@@ -58,7 +118,8 @@
         {% else %}<form method="post" action="{{ url_for('emitir_boleta', did=d.id) }}" onsubmit="return {{ 'true' if lineas else 'confirm(\'La orden no tiene líneas. ¿Emitir igual?\')' }}"><button class="btn teal">Emitir Boleta</button></form>{% endif %}
         {% if d.estado=='ABIERTA' %}<form method="post" action="{{ url_for('orden_cerrar', did=d.id) }}"><button class="btn gray">Cerrar Orden</button></form>{% endif %}
       {% endif %}
-      <a class="btn" href="javascript:print()">Imprimir</a>
+      <a class="btn" href="{{ url_for('documento_pdf', tipo=tipo, did=d.id) }}" target="_blank">Ver / Imprimir PDF</a>
+      <a class="btn" href="?tab=enviar">Enviar al cliente</a>
     </div>
   </div>
 </div>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Facturas de Compra{% endblock %}
+{% block vtab %}<div class="vtab">Almacén</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('almacen') }}">⬅</a><span class="ttl">Facturas de Compra</span><a href="{{ url_for('compra_nueva') }}" title="Nueva">＋</a></div>
+<div class="box-body">
+  <div class="sect">Facturas registradas</div>
+  {% if compras %}<table><tr><th>Fecha</th><th>N° Factura</th><th>Proveedor</th><th>Total</th><th>Recepción</th><th>Pago</th></tr>
+  {% for c in compras %}<tr class="row" onclick="location='{{ url_for('compra', cid=c.id) }}'" style="cursor:pointer">
+    <td>{{ c.fecha|fecha }}</td><td><a href="{{ url_for('compra', cid=c.id) }}">{{ c.numero }}</a></td><td>{{ c.proveedor or '(proveedor eliminado)' }}</td>
+    <td class="num">{{ c.total|clp }}</td>
+    <td>{% if not c.nlineas %}<small>sin líneas</small>{% elif c.pendientes %}<span class="tag grave">Pendiente</span>{% else %}<span class="tag">Recibida</span>{% endif %}</td>
+    <td>{{ '✔ Pagada' if c.pagada else 'Por pagar' }}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">No hay facturas de compra registradas.</p>{% endif %}
+  <div class="actions"><a class="btn blue" href="{{ url_for('compra_nueva') }}">Nueva Factura de Compra</a><a class="btn teal" href="{{ url_for('recepcion') }}">Recepción de Repuestos</a></div>
+</div></div>
+{% endblock %}

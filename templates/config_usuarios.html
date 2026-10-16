@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Usuarios{% endblock %}
+{% block vtab %}<div class="vtab">Configuración</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('configuracion') }}">⬅</a><span class="ttl">Usuarios y permisos</span><span></span></div>
+<div class="box-body">
+  <p style="font-size:12px">Los <b>administradores</b> pueden entrar a Configuración, la Papelera y modificar las marcas de entrada/salida de los trabajadores. Los <b>usuarios</b> trabajan con el resto del sistema.</p>
+  <div class="sect">Usuarios</div>
+  <table><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th></th></tr>
+  {% for u in usuarios %}<tr class="row"><td>{{ u.username }}</td><td>{{ u.nombre }}</td><td>{{ 'Administrador' if u.rol=='admin' else 'Usuario' }}</td>
+    <td class="num">{% if u.id != session.uid %}<form method="post" action="{{ url_for('usuario_borrar', uid=u.id) }}" onsubmit="return confirm('¿Eliminar usuario {{ u.username }}?')"><button class="btn small red">🗑</button></form>{% else %}<small>(tú)</small>{% endif %}</td></tr>{% endfor %}</table>
+  <div class="sect">Nuevo usuario</div>
+  <form method="post">
+    <div class="grid"><label>Usuario</label><input name="username" required autocomplete="off"><label>Nombre</label><input name="nombre"></div>
+    <div class="grid"><label>Contraseña</label><input type="password" name="password" minlength="6" required autocomplete="new-password">
+      <label>Rol</label><select name="rol"><option value="usuario">Usuario</option><option value="admin">Administrador</option></select></div>
+    <p style="font-size:12px">Para entrar se usa el mismo código de taller: <b>{{ codigo }}</b></p>
+    <div class="actions"><button class="btn">Crear usuario</button></div>
+  </form>
+</div></div>
+{% endblock %}

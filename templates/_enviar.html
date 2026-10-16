@@ -1,0 +1,18 @@
+{# Enviar el PDF al cliente por correo o WhatsApp. Requiere: env_tipo, env_id, c #}
+{% set link = enlace_publico(env_tipo, env_id) %}
+<div class="sect">Enviar al cliente (PDF)</div>
+<div class="enviar">
+  <form method="post" action="{{ url_for('documento_enviar', tipo=env_tipo, did=env_id) }}" class="inline">
+    <input type="hidden" name="canal" value="email">
+    <label>✉ Correo</label><input type="email" name="destino" value="{{ c.email or '' }}" placeholder="correo@cliente.cl" required>
+    {% if smtp_configurado() %}<button class="btn blue">Enviar PDF</button>
+    {% else %}<a class="btn blue" href="mailto:{{ c.email or '' }}?subject={{ ('Documento ' ~ (marca.nombre or ''))|urlencode }}&body={{ ('Puede ver y descargar su documento en PDF aquí: ' ~ link)|urlencode }}"
+      onclick="this.href = this.href.replace(/^mailto:[^?]*/, 'mailto:' + this.closest('form').destino.value)">Abrir en mi correo</a>{% endif %}
+  </form>
+  <form method="post" action="{{ url_for('documento_enviar', tipo=env_tipo, did=env_id) }}" class="inline" target="_blank">
+    <input type="hidden" name="canal" value="whatsapp">
+    <label>📱 Teléfono</label><input name="destino" value="{{ c.movil or c.telefono or '' }}" placeholder="+56 9 1234 5678" required>
+    <button class="btn teal">Enviar por WhatsApp</button>
+  </form>
+  <small>El cliente recibe un enlace para ver y descargar el PDF (válido 60 días).</small>
+</div>

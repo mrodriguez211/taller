@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}{{ 'Editar' if editar else 'Nuevo' }} Proveedor{% endblock %}
+{% block vtab %}<div class="vtab">Gestión de Proveedores</div>{% endblock %}
+{% macro f(name, label) %}<label>{{ label }}</label><input name="{{ name }}" value="{{ p[name] or '' }}">{% endmacro %}
+{% block content %}
+<form method="post" class="box"><div class="box-title"><a href="{{ url_for('proveedores') }}">⬅</a><span class="ttl">{{ 'Editar' if editar else 'Nuevo' }} Proveedor</span><button title="Guardar">💾</button></div>
+<div class="box-body">
+  <div class="sect">Datos del proveedor</div>
+  <div class="grid">{{ f('nombre', 'Nombre / Razón social *') }}{{ f('rut', 'RUT') }}</div>
+  <div class="grid">{{ f('rubro', 'Rubro') }}{{ f('contacto', 'Persona de contacto') }}</div>
+  <div class="grid">{{ f('telefono', 'Teléfono') }}{{ f('email', 'e-Mail') }}</div>
+  <div class="grid"><label>Dirección</label><input class="full" name="direccion" value="{{ p.direccion or '' }}"></div>
+  <p><b>Observaciones</b></p><textarea name="observaciones">{{ p.observaciones or '' }}</textarea>
+  <div class="actions"><a class="btn" href="{{ url_for('proveedores') }}">Volver</a><button class="btn">Guardar</button></div>
+</div></form>
+{% endblock %}

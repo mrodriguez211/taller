@@ -1,14 +1,16 @@
 <!doctype html>
+{% from "_marca.html" import estilo, logo_html, nombre_app with context %}
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{% block title %}TallerPro{% endblock %}</title>
+<title>{% block title %}{{ nombre_app() }}{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{{ estilo() }}
 </head>
 <body>
 <header class="top">
   <div class="bar">
-    <a class="logo" href="{{ url_for('dashboard') }}">⚙ Taller<span>PRO</span></a>
+    <a class="logo" href="{{ url_for('dashboard') }}">{{ logo_html() }}</a>
     <div class="welcome">bienvenido <b>{{ usuario }}</b> (número de taller <b>{{ codigo }}</b>)</div>
   </div>
   <ul class="menu">
@@ -16,32 +18,33 @@
       <div class="mega">
         <div>
           <a class="search" href="{{ url_for('clientes') }}">Buscar Cliente ...</a>
-          <a class="search" href="{{ url_for('vehiculos') }}">Buscar Vehículo ...</a>
           <h4>Gestión de Clientes</h4>
           <a href="{{ url_for('cliente_nuevo') }}">👤 Nuevo Cliente</a>
           <a href="{{ url_for('clientes') }}">📋 Gestionar Clientes</a>
           <h4>Gestión de Proveedores</h4>
-          <a href="{{ url_for('pronto', seccion='proveedores') }}">Nuevo Proveedor</a>
-          <a href="{{ url_for('pronto', seccion='proveedores') }}">Gestionar Proveedores</a>
+          <a href="{{ url_for('proveedor_form') }}">Nuevo Proveedor</a>
+          <a href="{{ url_for('proveedores') }}">Gestionar Proveedores</a>
         </div>
         <div>
           <h4>Gestión de Empleados</h4>
-          <a href="{{ url_for('pronto', seccion='empleados') }}">Nuevo Empleado</a>
-          <a href="{{ url_for('pronto', seccion='empleados') }}">Gestionar Empleados</a>
+          <a href="{{ url_for('empleado_form') }}">Nuevo Empleado</a>
+          <a href="{{ url_for('empleados') }}">Gestionar Empleados</a>
+          <a href="{{ url_for('asistencia') }}">⏱ Entrada / Salida</a>
+          <a href="{{ url_for('asistencia_registros') }}">Registro de asistencia</a>
           <h4>Gestión de Aseguradoras</h4>
           <a href="{{ url_for('pronto', seccion='aseguradoras') }}">Nueva Aseguradora</a>
           <a href="{{ url_for('pronto', seccion='aseguradoras') }}">Gestionar Aseguradoras</a>
         </div>
         <div>
           <h4>Planificación</h4>
-          <a href="{{ url_for('pronto', seccion='citas') }}">Citas Previas</a>
-          <a href="{{ url_for('pronto', seccion='agenda') }}">Agenda</a>
+          <a href="{{ url_for('citas') }}">📅 Citas Previas</a>
           <a href="{{ url_for('dashboard') }}">Estadísticas</a>
-        </div>
-        <div>
           <h4>Marketing</h4>
+          <a href="{{ url_for('marketing_qr') }}">▦ Código QR para agendar citas</a>
           <a href="{{ url_for('pronto', seccion='avisos-sms') }}">Avisos por SMS</a>
           <a href="{{ url_for('pronto', seccion='avisos-email') }}">Avisos por e-Mail</a>
+        </div>
+        <div>
           <h4>Caja</h4>
           <a href="{{ url_for('caja') }}">💵 Entradas / Salidas de Caja</a>
         </div>
@@ -54,14 +57,14 @@
           <a href="{{ url_for('vehiculos') }}">Nuevo Presupuesto</a>
           <a href="/presupuestos">Gestionar Presupuestos</a>
           <h4>Órdenes de Reparación</h4>
-          <a href="{{ url_for('vehiculos') }}">🔧 Nueva Orden de Reparación</a>
+          <a href="{{ url_for('vehiculos', ingreso=1) }}">🚗 Ingreso de vehículo (daños)</a>
+          <a href="{{ url_for('vehiculos', ingreso=1) }}">🔧 Nueva Orden de Reparación</a>
           <a href="/ordenes">Gestionar Órdenes</a>
           <a href="/ordenes?estado=ABIERTA">Visor de órdenes abiertas</a>
         </div>
         <div>
           <h4>Facturas de Taller</h4>
           <a href="/ordenes?estado=ABIERTA">Emitir Nueva Boleta</a>
-          <a href="{{ url_for('boletas') }}">Gestionar Boletas Emitidas</a>
           <h4>Entregas de Vehículos</h4>
           <a href="/ordenes?estado=CERRADA">Entregas realizadas</a>
         </div>
@@ -72,16 +75,49 @@
         </div>
       </div>
     </li>
-    <li><a href="{{ url_for('almacen') }}">Almacén ▾</a></li>
+    <li><a href="#">Almacén ▾</a>
+      <div class="mega">
+        <div>
+          <h4>Gestión de Repuestos</h4>
+          <a href="{{ url_for('almacen_nuevo') }}">Nuevo Repuesto</a>
+          <a href="{{ url_for('almacen') }}">Gestionar Repuestos</a>
+        </div>
+        <div>
+          <h4>Compras</h4>
+          <a href="{{ url_for('compra_nueva') }}">🧾 Nueva Factura de Compra</a>
+          <a href="{{ url_for('compras') }}">Facturas de Compra</a>
+        </div>
+        <div>
+          <h4>Bodega</h4>
+          <a href="{{ url_for('recepcion') }}">📦 Recepción de Repuestos</a>
+          <a href="{{ url_for('recepcion') }}#movimientos">Movimientos de stock</a>
+        </div>
+      </div>
+    </li>
     <li><a href="#">Informes ▾</a>
       <div class="mega" style="min-width:260px">
         <div><h4>Informes</h4>
           <a href="{{ url_for('dashboard') }}">Cuadro de Mando</a>
           <a href="{{ url_for('boletas') }}">Ventas por boleta</a>
-          <a href="{{ url_for('caja') }}">Movimientos de caja</a></div>
+          <a href="{{ url_for('caja') }}">Movimientos de caja</a>
+          <a href="{{ url_for('asistencia_registros') }}">Horas trabajadas</a></div>
       </div>
     </li>
-    <li><a href="{{ url_for('configuracion') }}">Configuración ▾</a></li>
+    <li><a href="#">Configuración ▾</a>
+      <div class="mega" style="min-width:420px">
+        <div>
+          <h4>Taller</h4>
+          <a href="{{ url_for('configuracion') }}">⚙ General (datos, logo y colores)</a>
+          <a href="{{ url_for('config_usuarios') }}">Usuarios y permisos</a>
+          <a href="{{ url_for('config_alertas') }}">🔔 Gestión de alertas</a>
+          <a href="{{ url_for('papelera') }}">🗑 Papelera</a>
+        </div>
+        <div>
+          <h4>Ayuda</h4>
+          <a href="{{ url_for('soporte') }}">🎓 Soporte y capacitación</a>
+        </div>
+      </div>
+    </li>
   </ul>
 </header>
 
@@ -89,10 +125,12 @@
   <a href="{{ url_for('logout') }}" title="Cerrar sesión">⏻</a>
   <a href="javascript:history.back()" title="Volver">⇄</a>
   <a href="{{ url_for('vehiculos') }}" title="Buscar patente">🚗</a>
-  <a href="{{ url_for('boletas') }}" class="alert" title="Boletas pendientes de cobro">🔔
+  <a href="{{ url_for('alertas_lista') }}" class="{{ 'alert' if alertas }}" title="Alertas">🔔
     {% if alertas %}<span class="badge">{{ alertas }}</span>{% endif %}</a>
-  <a href="/ordenes?estado=ABIERTA" title="Órdenes abiertas">📅</a>
+  <a href="{{ url_for('citas') }}" title="Citas">📅</a>
+  <a href="{{ url_for('asistencia') }}" title="Entrada / Salida">⏱</a>
   <a href="{{ url_for('caja') }}" title="Caja">💵</a>
+  <a href="{{ url_for('soporte') }}" title="Soporte y capacitación">?</a>
 </nav>
 
 {% block vtab %}{% endblock %}
@@ -101,7 +139,20 @@
   {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
   {% block content %}{% endblock %}
 </main>
-<div class="footer">TallerPro v1.0 · Python/Flask</div>
+<div class="footer">{{ nombre_app() }} v1.1 · Python/Flask</div>
+<script>
+// Botón ✕ en todos los buscadores: borra lo que se había buscado antes y vuelve a la lista completa.
+document.querySelectorAll('form input[name=q]').forEach(inp => {
+  inp.type = 'search';
+  inp.autocomplete = 'off';
+  const b = document.createElement('a');
+  b.className = 'btn gray limpiar';
+  b.textContent = '✕ Limpiar';
+  b.title = 'Borrar búsqueda';
+  b.href = location.pathname;
+  inp.closest('form').appendChild(b);
+});
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

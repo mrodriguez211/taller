@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block title %}Entrada / Salida{% endblock %}
+{% block vtab %}<div class="vtab">Control de Asistencia</div>{% endblock %}
+{% block content %}
+<div class="box"><div class="box-title"><a href="{{ url_for('dashboard') }}">⬅</a><span class="ttl">Entrada / Salida de trabajadores</span><a href="{{ url_for('asistencia_registros') }}" title="Registros">📋</a></div>
+<div class="box-body">
+  <div class="reloj" id="reloj"></div>
+  {% if empleados %}
+  <form method="post" class="marcar">
+    <select name="empleado_id" required><option value="">— Selecciona tu nombre —</option>{% for e in empleados %}<option value="{{ e.id }}">{{ e.nombre }}</option>{% endfor %}</select>
+    <input name="pin" type="password" inputmode="numeric" placeholder="PIN" required autocomplete="off" maxlength="6">
+    <button class="btn blue">Marcar</button>
+  </form>
+  <p style="text-align:center;font-size:12px;color:var(--muted)">La primera marca del día es la <b>entrada</b> y la siguiente la <b>salida</b>. Si te equivocas, solo un administrador puede corregirla.</p>
+  {% else %}<p class="empty">No hay empleados activos con PIN. Créalos en <a href="{{ url_for('empleados') }}">Gestión de Empleados</a>.</p>{% endif %}
+  <div class="sect">Marcas de hoy</div>
+  {% if hoy %}<table><tr><th>Hora</th><th>Empleado</th><th>Tipo</th></tr>
+  {% for m in hoy %}<tr class="row"><td>{{ m.fecha[11:16] }}</td><td>{{ m.nombre or '(eliminado)' }}</td>
+    <td><span class="tag {{ 'grave' if m.tipo=='salida' }}">{{ m.tipo|upper }}</span>{% if m.editado_por %} <small title="{{ m.motivo }}">✎ modificada</small>{% endif %}</td></tr>{% endfor %}</table>
+  {% else %}<p class="empty">Nadie ha marcado hoy.</p>{% endif %}
+</div></div>
+{% endblock %}
+{% block scripts %}<script>
+const r = document.getElementById('reloj');
+const tic = () => r.textContent = new Date().toLocaleTimeString('es-CL', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+tic(); setInterval(tic, 1000);
+</script>{% endblock %}
